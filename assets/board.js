@@ -80,51 +80,45 @@
   const textOf = (t) => (typeof t === "object" && t ? t.text : t);
   const STATUS = { hot: ["主流", "up"], cool: ["降溫", "down"], rise: ["可能轉好", "amber"] };
 
+  let openKey = null, innerTab = "why";
+  try { openKey = localStorage.getItem("sectorOpen"); innerTab = localStorage.getItem("sectorInner") || "why"; } catch (e) {}
+
   function renderSectors(b) {
     const box = $("#sectors");
     const S = b.sectors;
     if (!S) { box.hidden = true; return; }
-    const cats = [["hot", "主流族群"], ["cool", "降溫族群"], ["rise", "近期可能轉好"]];
-    if (!S[tab]) tab = "hot";
+    const cats = ["hot", "cool", "rise"];
     const list = (v) => (Array.isArray(v) ? v : points(v));
-    const rows = (items, fn) => items.map((it) => { const [chip, body] = fn(it); return `<li class="it">${chip}<span>${esc(body)}</span></li>`; }).join("");
-    const sec = (cls, title, items, fn) => items.length ? `<section class="blk ${cls}"><h4>${title}</h4><ul class="its">${rows(items, fn)}</ul></section>` : "";
-    const whyFn = (t) => [`<span class="tg">${esc(tagOf(t, WHY_TAGS, "說明"))}</span>`, textOf(t)];
-    const outFn = (t) => [`<span class="tg">${esc(tagOf(t, OUT_TAGS, "走勢"))}</span>`, textOf(t)];
-    const bestFn = (t) => { const x = textOf(t); const m = x.match(/^([^：:]{1,8})[：:](.+)$/); return m ? [`<span class="tg best">${esc(m[1])}</span>`, m[2].trim()] : [`<span class="tg best">建議</span>`, x]; };
-    const riskFn = (t) => [`<span class="tg risk">風險</span>`, textOf(t)];
+    const item = (chip, body) => `<li><span class="tg">${esc(chip)}</span>${esc(body)}</li>`;
+    const panes = {
+      why: ["原因", (g) => list(g.why).map((t) => item(tagOf(t, WHY_TAGS, "說明"), textOf(t)))],
+      out: ["走勢", (g) => list(g.outlook).map((t) => item(tagOf(t, OUT_TAGS, "走勢"), textOf(t)))],
+      best: ["誰較好", (g) => list(g.best).map((t) => { const x = textOf(t); const m = x.match(/^([^：:]{1,8})[：:](.+)$/); return m ? item(m[1], m[2].trim()) : item("建議", x); })],
+      risk: ["風險", (g) => list(g.risk).map((t) => item("風險", textOf(t)))],
+      stk: ["個股", null],
+    };
     const chip = (s) => {
       const px = prices[s.code];
       return `<button type="button" class="stk ${s.best ? "best" : ""}" data-code="${esc(s.code)}" data-name="${esc(s.name)}" aria-expanded="false">
         <span class="top"><b>${esc(s.name)}</b><code>${esc(s.code)}</code>${s.best ? '<span class="badge">較看好</span>' : ""}${px && px.close != null ? `<span class="px ${sign(px.chg_pct)}">${fmt(px.close, 2)} ${signed(px.chg_pct, 2)}%</span>` : ""}</span>
         <p>${esc(s.note)}</p></button>`;
     };
-    const [stLabel, stCls] = STATUS[tab];
-    const grp = (g, i) => {
-      const bestNames = (g.stocks || []).filter((s) => s.best).map((s) => s.name);
-      return `
-      <article class="grp" id="g-${tab}-${i}">
-        <header class="grp-h"><span class="st ${stCls}">${stLabel}</span><b>${esc(g.name)}</b></header>
-        <p class="grp-sum"><span class="${dirCls(g.dir)}">${esc(g.trend)}</span>${bestNames.length ? `<span>較看好：<b>${esc(bestNames.join("、"))}</b></span>` : ""}</p>
-        ${sec("why", "原因", list(g.why), whyFn)}
-        ${sec("out", "接下來怎麼走", list(g.outlook), outFn)}
-        ${sec("best", "誰比較好", list(g.best), bestFn)}
-        ${sec("risk", "要小心", list(g.risk), riskFn)}
-        <section class="blk"><h4>代表股　<span class="hint">點股票看 K 線、法人、營收與 EPS</span></h4><div class="stocks">${(g.stocks || []).map(chip).join("")}</div></section>
-        <div class="panel-host"></div>
-      </article>`;
+    const detail = (g) => {
+      const tabs = Object.entries(panes).map(([k, [l]]) => `<button type="button" data-inner="${k}" aria-pressed="${innerTab === k}">${l}</button>`).join("");
+      const body = innerTab === "stk"
+        ? `<div class="stocks">${(g.stocks || []).map(chip).join("")}</div><p class="hint" style="margin:6px 0 0">點股票看 K 線、法人、營收與 EPS</p><div class="panel-host"></div>`
+        : `<ul class="cmpt">${panes[innerTab][1](g).join("") || '<li class="empty">沒有資料</li>'}</ul>`;
+      return `<div class="sd"><p class="sd-trend ${dirCls(g.dir)}">${esc(g.trend)}</p><div class="seg sd-tabs" role="group">${tabs}</div>${body}</div>`;
     };
-    const overview = cats.map(([k]) => (S[k] || []).map((g, i) => {
-      const [l, c] = STATUS[k];
+    const rows = cats.map((k) => (S[k] || []).map((g, i) => {
+      const key = `${k}:${i}`, [l, c] = STATUS[k], open = key === openKey;
       const bn = (g.stocks || []).filter((s) => s.best).map((s) => s.name).join("、");
-      return `<button type="button" class="ov" data-jump="${k}:${i}"><span class="st ${c}">${l}</span><span class="ov-n">${esc(g.name)}</span>${bn ? `<span class="ov-b">${esc(bn)}</span>` : ""}</button>`;
+      return `<div class="sr ${open ? "open" : ""}"><button type="button" class="sr-h" data-open="${key}" aria-expanded="${open}">
+          <span class="st ${c}">${l}</span><span class="sr-n">${esc(g.name)}</span><span class="sr-b">${bn ? "較看好 " + esc(bn) : ""}</span><span class="sr-x" aria-hidden="true">${open ? "－" : "＋"}</span></button>
+        ${open ? detail(g) : ""}</div>`;
     }).join("")).join("");
     box.hidden = false;
-    box.innerHTML = `
-      <div class="sec-head"><h2>族群地圖</h2><p>${esc(S.asOf || "")}</p></div>
-      <div class="card ovs"><h3>一覽（點一下跳到該族群）</h3>${overview}</div>
-      <div class="tabs" role="tablist">${cats.map(([k, l]) => `<button type="button" role="tab" data-k="${k}" aria-selected="${tab === k}">${l}<span class="n">${(S[k] || []).length}</span></button>`).join("")}</div>
-      <div class="grps">${(S[tab] || []).map(grp).join("") || '<p class="empty">這一類目前沒有族群。</p>'}</div>`;
+    box.innerHTML = `<div class="card sm"><div class="sm-h"><h2>族群地圖</h2><span class="foot">${esc(S.asOf || "")}</span></div>${rows}</div>`;
   }
 
   function renderArchive() {
@@ -140,13 +134,13 @@
   }
 
   $("#sectors").addEventListener("click", (e) => {
-    const j = e.target.closest("button[data-jump]");
-    if (j) { const [k, i] = j.dataset.jump.split(":"); tab = k; try { localStorage.setItem("sectorTab", tab); } catch (err) {} renderSectors(brief); const el = document.getElementById(`g-${k}-${i}`); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-    const t = e.target.closest("button[data-k]");
-    if (t) { tab = t.dataset.k; try { localStorage.setItem("sectorTab", tab); } catch (err) {} renderSectors(brief); return; }
+    const o = e.target.closest("button[data-open]");
+    if (o) { openKey = openKey === o.dataset.open ? null : o.dataset.open; try { localStorage.setItem("sectorOpen", openKey || ""); } catch (err) {} renderSectors(brief); return; }
+    const t = e.target.closest("button[data-inner]");
+    if (t) { innerTab = t.dataset.inner; try { localStorage.setItem("sectorInner", innerTab); } catch (err) {} renderSectors(brief); return; }
     const s = e.target.closest(".stk");
     if (s) {
-      const host = s.closest(".grp").querySelector(".panel-host");
+      const host = s.closest(".sd").querySelector(".panel-host");
       const wasOpen = s.getAttribute("aria-expanded") === "true";
       document.querySelectorAll(".panel-host").forEach((h) => { if (h.innerHTML) StockPanel.close(h); });
       if (!wasOpen) { s.setAttribute("aria-expanded", "true"); StockPanel.open(host, s.dataset.code, s.dataset.name); }
