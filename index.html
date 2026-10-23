@@ -14,7 +14,7 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
 <meta name="description" content="每個交易日 08:20 更新的台股盤前建議、族群地圖、個股 K 線與漲跌機率。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=3">
+<link rel="stylesheet" href="assets/style.css?v=4">
 </head>
 <body>
 <div class="wrap">
@@ -98,9 +98,9 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
 </div>
 
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-<script src="assets/common.js?v=3"></script>
-<script src="assets/stock.js?v=3"></script>
-<script src="assets/board.js?v=3"></script>
+<script src="assets/common.js?v=4"></script>
+<script src="assets/stock.js?v=4"></script>
+<script src="assets/board.js?v=4"></script>
 <script>
 (function(){
   const mob=TX.mode()==="mobile";
@@ -110,7 +110,7 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
   const bear=[46.0,43.6,45.0,45.2,44.6,44.0,43.0,41.2,41.6,42.0,40.4,39.0,39.6,40.4,40.8];
   // on phones event labels alternate between two rows so they never collide
   const events=[{a:1.6,b:2.3,t:"九合一",s:"選舉"},{a:3.3,b:3.7,t:"台積電法說",s:"法說"},{a:5,b:6.2,t:"公布配息",s:"配息"},{a:8.8,b:10.6,t:"除息旺季",s:"除息"},{a:11.6,b:12.4,t:"中共二十一大",s:"二十一大"},{a:13,b:14,t:"選前行情",s:"選前"}];
-  const W=mob?380:760,H=mob?330:340,L=mob?40:54,R=mob?10:18,T=mob?50:40,B=mob?34:44,y0=36,y1=64,fs=mob?12:12;
+  const W=mob?340:760,H=mob?330:340,L=mob?40:54,R=mob?10:18,T=mob?50:40,B=mob?34:44,y0=36,y1=64,fs=mob?12:12;
   const X=i=>L+i*(W-L-R)/(months.length-1),Y=v=>T+(y1-v)*(H-T-B)/(y1-y0);
   const svg=document.getElementById("path"),NS="http://www.w3.org/2000/svg";
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`);

@@ -62,7 +62,9 @@ window.StockPanel = (function () {
       crosshair: { mode: 0 },
       localization: { locale: "zh-TW" },
     });
-    const candle = chart.addCandlestickSeries({ upColor: up, downColor: down, borderUpColor: up, borderDownColor: down, wickUpColor: up, wickDownColor: down });
+    const lastPx = bars.length ? bars[bars.length - 1][4] : 100;
+    const prec = lastPx >= 1000 ? 0 : lastPx >= 100 ? 1 : 2;
+    const candle = chart.addCandlestickSeries({ priceFormat: { type: "price", precision: prec, minMove: 1 / 10 ** prec }, upColor: up, downColor: down, borderUpColor: up, borderDownColor: down, wickUpColor: up, wickDownColor: down });
     candle.setData(bars.map((b) => ({ time: b[0], open: +b[1].toFixed(2), high: +b[2].toFixed(2), low: +b[3].toFixed(2), close: +b[4].toFixed(2) })));
     const vol = chart.addHistogramSeries({ priceScaleId: "", priceFormat: { type: "volume" } });
     vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });

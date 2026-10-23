@@ -241,3 +241,6 @@ html[data-mode="mobile"] .tl td{color:var(--ink)}
 html[data-mode="mobile"] .tl td.rng{font-size:16px}
 html[data-mode="mobile"] .tl table.rt td{display:block;text-align:left}
 html[data-mode="mobile"] .tl table.rt td::before{display:block;margin-bottom:2px}
+html[data-mode="mobile"] .grp{padding:14px 12px}
+html[data-mode="mobile"] .panel{margin:0 -4px;padding:12px 10px}
+html[data-mode="mobile"] .panel-h .x{padding:2px 10px}
