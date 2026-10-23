@@ -32,19 +32,21 @@ def quote_yahoo():
 def main():
     now = now_tw()
     today = now.date().isoformat()
-    q = None
+    q, errors = None, []
     for fn in (quote_twse, quote_yahoo):
         try:
             q = fn()
             if q["price"]:
                 break
         except Exception as e:
-            print("quote failed", fn.__name__, e, file=sys.stderr)
+            errors.append(f"{fn.__name__}: {e}"[:300])
+    status = {"run_at": now.isoformat(timespec="minutes"), "errors": errors,
+              "src": q["src"] if q else None, "quote_date": q["date"] if q else None}
     if not q or not q["price"]:
-        print("no quote"); return
+        write_json("status/intraday.json", {**status, "result": "抓不到報價"}); return
     qdate = f"{q['date'][:4]}-{q['date'][4:6]}-{q['date'][6:]}"
     if qdate != today:
-        print("market closed today (quote date", qdate, ")"); return
+        write_json("status/intraday.json", {**status, "result": f"今天休市（最新報價日 {qdate}）"}); return
 
     taiex = read_json("taiex.json", [])
     closes = np.array([r[4] for r in taiex[-21:]], dtype=float)
@@ -72,6 +74,7 @@ def main():
     write_json("live.json", {"date": today, "time": q["time"], "price": q["price"], "prev_close": q["prev"],
                              "ret_pct": round(r * 100, 2), "p_up": round(p, 4), "prior": prior, "src": q["src"],
                              "updated": now.isoformat(timespec="minutes")})
+    write_json("status/intraday.json", {**status, "result": "已更新", "time": q["time"], "p": round(p, 4)})
     print(q, p)
 
 
