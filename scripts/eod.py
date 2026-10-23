@@ -74,12 +74,32 @@ def scorecard(preds):
     return out
 
 
+CSV_HEADERS = {
+    "made_on": "依據收盤日", "target": "預測交易日",
+    "p_eod": "台股收盤後機率（未含美股）", "eod_at": "收盤後預測時間",
+    "p_pre": "含隔夜美股機率", "pre_at": "含美股預測時間",
+    "p_0930": "盤中09:30機率", "p_1100": "盤中11:00機率", "p_1300": "盤中13:00機率",
+    "prev_close": "前一日收盤", "close": "當日收盤", "ret_pct": "漲跌幅%",
+    "up": "實際收紅（1紅0黑）", "hit_eod": "收盤後預測對錯（1對0錯）", "hit_pre": "含美股預測對錯（1對0錯）",
+    "brier_eod": "收盤後Brier（越低越準）", "brier_pre": "含美股Brier（越低越準）",
+}
+
+
+def _cell(k, v):
+    if v is None:
+        return ""
+    if k.endswith("_at") and isinstance(v, str):
+        return v.replace("T", " ")[:16]  # 2026-10-23 18:16
+    return v
+
+
 def write_csv(preds):
+    """Chinese headers for people opening the sheet; column order is fixed so sheet formulas keep working."""
     buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=CSV_FIELDS, extrasaction="ignore")
-    w.writeheader()
+    w = csv.writer(buf)
+    w.writerow([CSV_HEADERS[k] for k in CSV_FIELDS])
     for r in preds:
-        w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in CSV_FIELDS})
+        w.writerow([_cell(k, r.get(k)) for k in CSV_FIELDS])
     (DATA / "predictions.csv").write_text(buf.getvalue(), encoding="utf-8")
 
 
