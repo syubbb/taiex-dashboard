@@ -65,7 +65,7 @@
       <div class="sec-head"><h2>上次更新後發生什麼</h2><p>${esc(cmp.window || "")}</p></div>
       <div class="stack">
         ${rows ? `<div class="card" style="overflow-x:auto"><table class="cmp"><thead><tr><th>指標</th><th>${esc(cmp.beforeLabel || "上次")}</th><th>${esc(cmp.afterLabel || "這次")}</th><th>變化</th></tr></thead><tbody>${rows}</tbody></table></div>` : ""}
-        ${nws ? `<div class="card"><h3>新聞時間線</h3><div class="news">${nws}</div></div>` : ""}
+        <div class="card" id="newsbox"><h3>新聞時間線</h3><div class="news">${nws}</div></div>
         ${recap || logHtml ? `<div class="two">${recap}${logHtml}</div>` : ""}
         ${srcs.length ? `<details class="src"><summary>資料來源（${srcs.length}）</summary><ul>${srcs.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul></details>` : ""}
       </div>`;
@@ -82,6 +82,37 @@
 
   let openKey = null, innerTab = "why";
   try { openKey = localStorage.getItem("sectorOpen"); innerTab = localStorage.getItem("sectorInner") || "why"; } catch (e) {}
+
+  // Accumulated news archive with page numbers; falls back to this brief's own news if the archive is missing.
+  const PER = 10;
+  let newsAll = null, newsPage = 1;
+  function newsHtml(n) {
+    const imp = n.dir === "up" ? "利多" : n.dir === "down" ? "利空" : "中性";
+    return `<div class="nw"><time>${esc(n.time)}</time><span class="pill ${dirCls(n.dir)}">${imp}</span><div class="t">${esc(n.title)}</div><div class="d">${esc(n.detail)}</div>${n.who ? `<div class="w">影響族群：${esc(n.who)}</div>` : ""}</div>`;
+  }
+  function pager(cur, total) {
+    if (total <= 1) return "";
+    const set = new Set([1, total, cur - 2, cur - 1, cur, cur + 1, cur + 2].filter((x) => x >= 1 && x <= total));
+    const nums = [...set].sort((a, b) => a - b);
+    let html = `<button type="button" data-pg="${cur - 1}" ${cur === 1 ? "disabled" : ""} aria-label="上一頁">‹</button>`;
+    nums.forEach((n, i) => { if (i && n - nums[i - 1] > 1) html += `<span class="gap">…</span>`; html += `<button type="button" data-pg="${n}" aria-current="${n === cur ? "page" : "false"}">${n}</button>`; });
+    return `<nav class="pager" aria-label="新聞分頁">${html}<button type="button" data-pg="${cur + 1}" ${cur === total ? "disabled" : ""} aria-label="下一頁">›</button></nav>`;
+  }
+  function renderNews() {
+    const box = document.getElementById("newsbox");
+    if (!box || !newsAll || !newsAll.length) return;
+    const total = Math.ceil(newsAll.length / PER);
+    newsPage = Math.min(Math.max(newsPage, 1), total);
+    const items = newsAll.slice((newsPage - 1) * PER, newsPage * PER);
+    let html = "", lastBrief = null;
+    items.forEach((n) => { if (n.brief !== lastBrief) { html += `<div class="nw-day">${esc(n.brief)} 整理</div>`; lastBrief = n.brief; } html += newsHtml(n); });
+    box.innerHTML = `<h3>新聞時間線　<span class="hint">共 ${newsAll.length} 則，第 ${newsPage}/${total} 頁，最新在前</span></h3><div class="news">${html}</div>${pager(newsPage, total)}`;
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".pager button[data-pg]"); if (!b || b.disabled) return;
+    newsPage = +b.dataset.pg; renderNews();
+    document.getElementById("newsbox").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   function renderSectors(b) {
     const box = $("#sectors");
@@ -131,6 +162,8 @@
   async function load(date) {
     brief = await getJSON(`briefs/${date}.json`);
     renderBrief(brief); renderChanges(brief); renderSectors(brief); renderArchive();
+    if (!newsAll) { try { newsAll = (await getJSON("news.json")).items; } catch (e) { newsAll = null; } }
+    renderNews();
   }
 
   $("#sectors").addEventListener("click", (e) => {

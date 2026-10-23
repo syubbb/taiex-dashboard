@@ -1,0 +1,29 @@
+name: 新聞庫：整理所有盤前建議的新聞
+on:
+  schedule:
+    - cron: "50 * * * *"   # 每小時 :50
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data-writer
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests==2.32.3
+      - run: python scripts/build_news.py
+        env:
+          DATA_DIR: data-branch/data
+          PYTHONPATH: scripts
+      - run: scripts/commit.sh "新聞庫 $(TZ=Asia/Taipei date '+%F %H:%M')"
