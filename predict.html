@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>台股漲跌機率</title>
+<meta name="description" content="加權指數下一交易日與盤中收紅機率，附每日預測紀錄、命中率與校準表。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><span class="brand">台股盤前看板</span><a href="index.html">每日看板</a><a href="predict.html" aria-current="page">漲跌機率</a></nav>
+
+  <section class="stack">
+    <div class="meta"><span class="tag">加權指數 · 收盤價比前一日</span><span id="stamp"></span></div>
+    <h1 id="headline">漲跌機率</h1>
+    <p class="lede">每天收盤後先算一次「下一交易日收紅機率」，隔天 08:05 加入隔夜美股再算一次，開盤後每 5 分鐘更新「今天收紅機率」。所有預測都存進紀錄，收盤後自動對答案，不會事後修改。</p>
+  </section>
+
+  <section id="now"></section>
+  <section id="intraday"></section>
+  <section id="why"></section>
+  <section id="score"></section>
+  <section id="log"></section>
+
+  <section class="card">
+    <h3>匯出與驗證</h3>
+    <ul class="plain">
+      <li>完整紀錄（CSV，每天自動更新）：<a id="csv" href="#" target="_blank" rel="noopener">predictions.csv</a></li>
+      <li>在 Google 試算表 A1 貼上這個公式，表格會自動跟著更新：
+        <div class="copy" style="margin-top:6px"><code id="formula"></code><button type="button" id="copyBtn">複製</button></div></li>
+      <li>欄位說明：made_on＝用哪天收盤資料預測；target＝被預測的交易日；p_eod＝收盤後機率；p_pre＝盤前機率（含隔夜美股）；p_0930／p_1100／p_1300＝盤中機率；up＝實際收紅為 1；hit＝機率大於 50% 且收紅、或小於 50% 且收黑為 1；brier＝(機率−實際)²，越小越準。</li>
+    </ul>
+  </section>
+  <p class="foot">這是統計模型，不是投資建議。判斷有沒有價值的方式：累積至少 60 個交易日後，命中率要穩定高於「天天猜漲」，Brier 分數要低於基準。</p>
+</div>
+<script src="assets/common.js"></script>
+<script src="assets/predict.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+name: 收盤後：對答案、預測下一交易日、更新個股
+on:
+  schedule:
+    - cron: "5 8 * * 1-5"    # 16:05 台北
+    - cron: "5 10 * * 1-5"   # 18:05 台北（補跑）
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data-writer
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/eod.py
+        env:
+          DATA_DIR: data-branch/data
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+          PYTHONPATH: scripts
+      - run: scripts/commit.sh "收盤後更新 $(TZ=Asia/Taipei date +%F)"

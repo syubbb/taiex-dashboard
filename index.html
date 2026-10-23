@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>台股盤前看板</title>
+<meta name="description" content="每個交易日 08:20 更新的台股盤前建議、族群地圖、個股 K 線與漲跌機率。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><span class="brand">台股盤前看板</span><a href="index.html" aria-current="page">每日看板</a><a href="predict.html">漲跌機率</a></nav>
+
+  <section class="prob" id="prob" aria-live="polite"><div><div class="l">漲跌機率</div><div class="s">載入中…</div></div></section>
+
+  <section id="brief" aria-live="polite"><p class="empty">正在載入盤前建議…</p></section>
+  <section id="changes" hidden></section>
+  <section id="sectors" hidden></section>
+  <div id="archive" hidden></div>
+
+  <section>
+    <div class="sec-head">
+      <h2>大盤情境路徑（2026/10 → 2027/12）</h2>
+      <p>基準情境：年底前在 44,500–48,000 震盪打底，作帳與選後行情回到 48,000–49,000；2027 年高檔震盪往上，年底約 53,000–55,000。數字是估算，不是投資建議。</p>
+    </div>
+    <div class="card">
+      <div class="legend" style="margin-bottom:8px">
+        <span><i style="background:var(--navy)"></i>基準</span><span><i style="background:var(--up)"></i>樂觀</span>
+        <span><i style="background:var(--down)"></i>悲觀</span><span><i style="background:var(--band2);height:10px"></i>事件區間</span>
+      </div>
+      <div class="chart-box"><svg id="path" viewBox="0 0 760 340" role="img" aria-label="加權指數三種情境路徑"></svg></div>
+      <div class="evs">
+        <div><b>九合一與核電公投 · 2026/11/28</b><span>地方選舉對大盤影響小，常見選前護盤、選後利空出盡；核電公投結果牽動重電與電力股。</span></div>
+        <div><b>台積電法說 · 2027/1 月中</b><span>給 2027 全年營收、資本支出與毛利率指引，決定上半年方向。</span></div>
+        <div><b>公布配息 · 2–4 月</b><span>董事會陸續公布股利，高殖利率股與金融股被提前卡位。</span></div>
+        <div><b>除息旺季 · 7–8 月</b><span>加權指數不含息，除息會讓指數少掉約 800–1,200 點；看填息速度判斷多頭強弱。</span></div>
+        <div><b>中共二十一大 · 2027 秋</b><span>決定習近平第四任與對台路線，又逢解放軍建軍百年。外資會加碼避險、調低台股評價；2022 年二十大閉幕後台股就落在當年低點 12,629 附近。</span></div>
+        <div><b>選前行情 · 2027/11–12</b><span>2028 年 1 月總統大選前，政策作多加上年底作帳，是 2027 年最有機會創高的時段。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scen">
+    <div class="sc"><div class="t up">樂觀 · 25%</div><div class="p">58,000–62,000</div><div class="d">美債回落、AI 資本支出續擴，本益比維持 26 倍上下。</div></div>
+    <div class="sc"><div class="t" style="color:var(--navy)">基準 · 50%</div><div class="p">53,000–55,000</div><div class="d">獲利成長約 25%，本益比降到 22–23 倍。</div></div>
+    <div class="sc"><div class="t down">悲觀 · 25%</div><div class="p">38,000–42,000</div><div class="d">Fed 再升息或 AI 投資踩煞車，加上地緣風險。</div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>時間軸與觀察重點</h2></div>
+    <div class="tl"><table>
+      <thead><tr><th>階段</th><th>時間</th><th>預估區間</th><th>會遇到的狀況</th><th>觀察重點</th></tr></thead>
+      <tbody>
+        <tr><td class="ph">震盪打底</td><td>2026/10 底–11 月中</td><td class="rng">44,500–48,000</td><td>FOMC（10/29 凌晨）、美國期中選舉 11/3、Q3 財報 11/14 截止、輝達財報、MSCI 調整</td><td>外資期貨淨空單、季線能否收復、美 10 年債 5% 關卡</td></tr>
+        <tr><td class="ph">選舉＋作帳</td><td>11 月下–12 月</td><td class="rng">47,000–50,000</td><td>九合一與核電公投 11/28、當選公告 12/4、FOMC 點陣圖 12/10、期貨結算 12/16、投信年底作帳</td><td>選前政策買盤、選後利空出盡、電力與重電族群、中小型作帳股</td></tr>
+        <tr><td class="ph">紅包行情</td><td>2027/1–2 月</td><td class="rng">48,000–51,000</td><td>台積電法說（1 月中）、FOMC 1/28、農曆年封關（約 2/6 前）</td><td>台積電 2027 資本支出與漲價、年假期間美股</td></tr>
+        <tr><td class="ph">公布配息季</td><td>3–4 月</td><td class="rng">47,000–53,000</td><td>董事會公布配息（電子 2–3 月、金融 3–4 月）、年報 3/31、輝達 GTC</td><td>高殖利率股提前卡位、能否挑戰前高 50,000</td></tr>
+        <tr><td class="ph">財報與股東會</td><td>5–6 月</td><td class="rng">46,000–51,000</td><td>Q1 財報 5/15、股東會密集、獲利了結季節性</td><td>拉回幅度、量能、外資是否轉買</td></tr>
+        <tr><td class="ph">除權息旺季</td><td>7–8 月</td><td class="rng">47,000–53,000</td><td>除息蒸發約 800–1,200 點、台積電 7 月法說、半年報 8/14</td><td>填息速度、改看報酬指數</td></tr>
+        <tr><td class="ph">季節性偏弱</td><td>9–10 月</td><td class="rng">46,000–52,000</td><td>中共二十一大（2027 秋）、「2027 台海」論述、台積電 10 月法說</td><td>外資避險賣壓、2028 年獲利展望</td></tr>
+        <tr><td class="ph">選前行情</td><td>11–12 月</td><td class="rng">53,000–55,000</td><td>2028/1 總統大選選戰、年底作帳</td><td>政策作多、能否創歷史新高</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h3>全程五個指標</h3>
+      <ol class="check">
+        <li>美 10 年債：站穩 5.3% 以上評價壓力加劇；跌回 4.5% 以下往樂觀靠。</li>
+        <li>台積電每季法說：資本支出、漲價、毛利率是否逼近 70%。</li>
+        <li>外資買賣超與台幣匯率：連續轉為買超才算確認。</li>
+        <li>雲端大廠資本支出指引：決定 2027 下半年獲利能否續上修。</li>
+        <li>地緣與油價：中東衝突推升通膨，牽動 Fed。</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>更新時間（交易日）</h3>
+      <ul class="plain">
+        <li>08:05　加入隔夜美股，更新今天上漲機率</li>
+        <li>08:20　盤前建議、新聞對照、族群地圖</li>
+        <li>09:00–13:30　每 5 分鐘更新盤中收紅機率</li>
+        <li>14:40　盤後回顧</li>
+        <li>16:05　對答案、預測下一交易日、更新個股 K 線與財報</li>
+      </ul>
+      <p class="foot" style="margin:12px 0 0">排程可能晚幾分鐘。內容為市場資訊、法人觀點整理與統計模型，不是投資建議；「較看好」指族群內受惠程度相對高。</p>
+    </div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/stock.js"></script>
+<script src="assets/board.js"></script>
+<script>
+(function(){
+  const months=["26/10","11","12","27/1","2","3","4","5","6","7","8","9","10","11","12"];
+  const base=[46.0,45.4,48.6,49.6,50.2,51.2,51.6,49.6,50.2,51.2,50.6,49.6,50.8,52.6,54.0];
+  const bull=[46.0,46.8,50.2,52.2,53.6,55.0,56.0,54.6,55.6,57.0,57.0,56.4,58.0,59.4,60.5];
+  const bear=[46.0,43.6,45.0,45.2,44.6,44.0,43.0,41.2,41.6,42.0,40.4,39.0,39.6,40.4,40.8];
+  const events=[{a:1.6,b:2.3,t:"九合一"},{a:3.3,b:3.7,t:"台積電法說"},{a:5,b:6.2,t:"公布配息"},{a:8.8,b:10.6,t:"除息旺季"},{a:11.6,b:12.4,t:"中共二十一大"},{a:13,b:14,t:"選前行情"}];
+  const W=760,H=340,L=54,R=18,T=40,B=44,y0=36,y1=64;
+  const X=i=>L+i*(W-L-R)/(months.length-1),Y=v=>T+(y1-v)*(H-T-B)/(y1-y0);
+  const svg=document.getElementById("path"),NS="http://www.w3.org/2000/svg";
+  const el=(n,a,t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;svg.appendChild(e);return e;};
+  const txt=(x,y,s,o={})=>el("text",Object.assign({x,y,"font-size":"12",fill:"var(--muted)","font-family":"var(--sans)"},o),s);
+  events.forEach(ev=>{el("rect",{x:X(ev.a),y:T,width:X(ev.b)-X(ev.a),height:H-T-B,fill:"var(--band2)"});txt((X(ev.a)+X(ev.b))/2,T-12,ev.t,{"text-anchor":"middle"});});
+  for(let v=40;v<=60;v+=5){el("line",{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:"var(--line)"});txt(L-8,Y(v)+4,v+"K",{"text-anchor":"end","font-family":"var(--mono)"});}
+  months.forEach((m,i)=>txt(X(i),H-B+20,m,{"text-anchor":"middle","font-family":"var(--mono)"}));
+  const pts=a=>a.map((v,i)=>X(i)+","+Y(v)).join(" ");
+  el("polygon",{points:pts(bull)+" "+bear.map((v,i)=>[i,v]).reverse().map(([i,v])=>X(i)+","+Y(v)).join(" "),fill:"var(--band)"});
+  el("polyline",{points:pts(bull),fill:"none",stroke:"var(--up)","stroke-width":1.8,"stroke-dasharray":"5 4"});
+  el("polyline",{points:pts(bear),fill:"none",stroke:"var(--down)","stroke-width":1.8,"stroke-dasharray":"5 4"});
+  el("polyline",{points:pts(base),fill:"none",stroke:"var(--navy)","stroke-width":3,"stroke-linejoin":"round"});
+  el("line",{x1:X(0),x2:X(0),y1:Y(46.04)-6,y2:Y(51.2),stroke:"var(--ink)"});
+  el("circle",{cx:X(0),cy:Y(46.04),r:5,fill:"var(--navy)"});
+  txt(X(0)+4,Y(51.2)-6,"現在 46,041",{"font-size":"13",fill:"var(--ink)","font-weight":"700"});
+  el("circle",{cx:X(1),cy:Y(45.4),r:4,fill:"var(--paper)",stroke:"var(--navy)","stroke-width":2});
+  txt(X(1),Y(43.6)+20,"打底區",{"text-anchor":"middle"});
+  [[base,"var(--navy)"],[bull,"var(--up)"],[bear,"var(--down)"]].forEach(([a,c])=>{const v=a[a.length-1];txt(X(14)-4,Y(v)-8,Math.round(v*1000).toLocaleString(),{"text-anchor":"end","font-weight":"700",fill:c,"font-family":"var(--mono)"});});
+})();
+</script>
+</body>
+</html>

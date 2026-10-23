@@ -1,0 +1,31 @@
+name: 盤前：加入隔夜美股更新機率
+on:
+  schedule:
+    - cron: "5 0 * * 1-5"    # 08:05 台北
+    - cron: "35 0 * * 1-5"   # 08:35 台北（補跑）
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: data-writer
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/premarket.py
+        env:
+          DATA_DIR: data-branch/data
+          PYTHONPATH: scripts
+      - run: scripts/commit.sh "盤前機率 $(TZ=Asia/Taipei date '+%F %H:%M')"
