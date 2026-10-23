@@ -35,7 +35,42 @@ window.TX = (function () {
     const nthSun = (m, n) => { const d = new Date(Date.UTC(y, m, 1)); const first = (7 - d.getUTCDay()) % 7 + 1; return `${m + 1}/${first + 7 * (n - 1)}`; };
     const short = state === "open" ? "交易中" : state === "pre" ? `今晚 ${open} 開盤` : text.includes("週一") ? `週一 ${open} 開盤` : `今晚 ${open} 開盤`;
     const line = `美股 ${open}–${close}（${dst ? "夏令" : "冬令"}）｜${short}`;
-    return { dst, open, close, state, text, short, line, season: dst ? "夏令時間" : "冬令時間", summerFrom: nthSun(2, 2), winterFrom: nthSun(10, 1) };
+    return { dst, open, close, state, text, short, line, short, line, season: dst ? "夏令時間" : "冬令時間", summerFrom: nthSun(2, 2), winterFrom: nthSun(10, 1) };
+  }
+  // "今天盤中收紅機率" block: always shown; before the open it says when updates start.
+  function intradayBlock(day, live) {
+    const today = todayTW();
+    const nowTW = new Date(Date.now() + 8 * 3600e3);
+    const hm = nowTW.getUTCHours() * 60 + nowTW.getUTCMinutes();
+    const isToday = day && day.date === today && day.points && day.points.length;
+    const head = `<div class="sec-head"><h2>今天盤中收紅機率</h2><p>台股 09:00–13:30 每 5 分鐘更新：以現在的漲跌，收盤仍高於昨天收盤的機率</p></div>`;
+    if (!isToday) {
+      const wd = nowTW.getUTCDay();
+      const msg = wd === 0 || wd === 6 ? "今天週末休市，下個交易日 09:00 開盤後開始更新。"
+        : hm < 540 ? "09:00 開盤後開始更新，第一筆約在 09:05 出現。"
+        : hm < 815 ? "等待第一筆資料（排程偶爾會晚幾分鐘）。若一直沒有，可能今天休市。"
+        : "今天沒有盤中資料（休市或尚未上線）。";
+      const last = live && live.date !== today ? `<p class="foot" style="margin:8px 0 0">上一個交易日 ${esc(live.date)} ${esc(live.time)}：收紅機率 ${pct(live.p_up)}，加權 ${fmt(live.price, 2)}（${signed(live.ret_pct, 2)}%）</p>` : "";
+      return head + `<div class="card"><p style="margin:0"><b>${msg}</b></p>${last}</div>`;
+    }
+    const pts = day.points, last = pts[pts.length - 1];
+    const W = 340, H = 120, L = 6, R = 6, T = 8, B = 18;
+    const tmin = (t) => { const [h, m] = t.split(":").map(Number); return Math.min(Math.max(h * 60 + m - 540, 0), 270); };
+    const X = (t) => L + tmin(t) / 270 * (W - L - R), Y = (p) => T + (1 - p) * (H - T - B);
+    const line = pts.map((q) => `${X(q[0]).toFixed(1)},${Y(q[3]).toFixed(1)}`).join(" ");
+    const closed = hm >= 810;
+    const cls = last[3] >= 0.5 ? "up" : "down";
+    return head + `<div class="card intra">
+      <div class="intra-top"><div><div class="big ${cls}">${pct(last[3])}</div><div class="foot">${closed ? "收盤" : esc(last[0]) + " 更新"}　開盤前預估 ${pct(day.prior)}</div></div>
+        <div class="intra-ix"><div class="num" style="font-size:20px">${fmt(last[1], 2)}</div><div class="num ${sign(last[2])}">${signed(last[2], 2)}%</div><div class="foot">${esc(day.src || "")}</div></div></div>
+      <svg viewBox="0 0 ${W} ${H}" class="spark" role="img" aria-label="今天收紅機率走勢">
+        <line x1="${L}" x2="${W - R}" y1="${Y(.5)}" y2="${Y(.5)}" stroke="var(--line)" stroke-dasharray="4 4"/>
+        <text x="${W - R}" y="${Y(.5) - 4}" text-anchor="end" font-size="10" fill="var(--muted)">50%</text>
+        ${["09:00", "11:15", "13:30"].map((t, i) => `<text x="${X(t)}" y="${H - 4}" text-anchor="${["start", "middle", "end"][i]}" font-size="10" fill="var(--muted)" font-family="var(--mono)">${t}</text>`).join("")}
+        <polyline points="${line}" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="${X(last[0])}" cy="${Y(last[3])}" r="4" fill="var(--${cls})"/></svg>
+      <div class="intra-list">${pts.slice(-6).reverse().map((q) => `<span><span class="num">${esc(q[0])}</span> <b class="${q[3] >= .5 ? "up" : "down"}">${pct(q[3])}</b> <span class="num ${sign(q[2])}">${signed(q[2], 2)}%</span></span>`).join("")}</div>
+    </div>`;
   }
   const mode = () => document.documentElement.dataset.mode || "desktop";
   // Give every cell of a .rt table its column name, so phones can show rows as labelled cards.
@@ -59,5 +94,5 @@ window.TX = (function () {
     nav.appendChild(box);
   }
   document.addEventListener("DOMContentLoaded", () => { initModeSwitch(); labelTables(); });
-  return { REPO, DATA, getJSON, esc, dirCls, sign, pct, fmt, signed, points, todayTW, mode, labelTables, usMarket };
+  return { REPO, DATA, getJSON, esc, dirCls, sign, pct, fmt, signed, points, todayTW, mode, labelTables, usMarket, intradayBlock };
 })();

@@ -244,3 +244,10 @@ html[data-mode="mobile"] .tl table.rt td::before{display:block;margin-bottom:2px
 html[data-mode="mobile"] .grp{padding:14px 12px}
 html[data-mode="mobile"] .panel{margin:0 -4px;padding:12px 10px}
 html[data-mode="mobile"] .panel-h .x{padding:2px 10px}
+
+/* intraday block */
+.intra{display:grid;gap:12px}
+.intra-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.intra-ix{text-align:right}
+.spark{display:block;width:100%;height:auto;max-height:180px}
+.intra-list{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px}

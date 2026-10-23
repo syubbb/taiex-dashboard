@@ -17,7 +17,7 @@
     const intradayOn = live && live.date === today;
     const preOk = pre && eod && pre.made_on === eod.made_on;
     const cards = [];
-    if (intradayOn) cards.push(`<div class="card"><h3>今天盤中收紅機率 · ${esc(live.time)}</h3><div class="big ${tone(live.p_up)}">${pct(live.p_up)}</div>${bar(live.p_up)}<p class="foot">加權 ${fmt(live.price, 2)}（<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>）　資料：${esc(live.src)}</p></div>`);
+    if (false) cards.push(`<div class="card"><h3>今天盤中收紅機率 · ${esc(live.time)}</h3><div class="big ${tone(live.p_up)}">${pct(live.p_up)}</div>${bar(live.p_up)}<p class="foot">加權 ${fmt(live.price, 2)}（<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>）　資料：${esc(live.src)}</p></div>`);
     if (preOk) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big ${tone(pre.p)}">${pct(pre.p)}</div>${bar(pre.p)}<p class="foot">${esc(pre.updated.replace("T", " "))} 更新　依 ${esc(pre.made_on)} 台股收盤，已納入美股至 ${esc(pre.us_last_session.sox)}（美東日期）</p></div>`);
     if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">${esc(TX.usMarket().line)}</p></div>`);
     const main = intradayOn ? live.p_up : preOk ? pre.p : eod ? eod.p : null;
@@ -28,7 +28,7 @@
 
   function intradaySection(day) {
     const box = $("#intraday");
-    if (!day || !day.points || !day.points.length) { box.innerHTML = ""; return; }
+    if (!day || !day.points || !day.points.length) { box.innerHTML = TX.intradayBlock(day, window.__live); return; }
     const mob = TX.mode() === "mobile";
     const W = mob ? 380 : 760, H = mob ? 240 : 260, L = 44, R = 14, T = 16, B = 34;
     const tmin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m - 540; };
@@ -107,6 +107,7 @@
       getJSON("model_pre.json").catch(() => null), getJSON("model_eod.json").catch(() => null),
       getJSON("live.json").catch(() => null), getJSON("predictions.json").catch(() => []), getJSON("scorecard.json").catch(() => null)]);
     const day = await getJSON(`intraday/${todayTW()}.json`).catch(() => null);
+    window.__live = live;
     nowSection(pre, eod, live); intradaySection(day); whySection(pre, eod); scoreSection(pre, eod, sc); logSection(preds || []);
     TX.labelTables();
   }

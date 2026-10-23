@@ -11,14 +11,13 @@
       getJSON("live.json").catch(() => null), getJSON("model_pre.json").catch(() => null), getJSON("model_eod.json").catch(() => null)]);
     const cells = [];
     const pNext = pre && eod && pre.made_on === eod.made_on ? pre : null;
-    if (live && live.date === todayTW()) {
-      cells.push(`<div><div class="l">今天盤中收紅機率（${esc(live.time)}）</div><div class="v ${live.p_up >= .5 ? "up" : "down"}">${pct(live.p_up)}</div><div class="s">加權 ${fmt(live.price, 2)}　<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>　開盤前預估 ${pct(live.prior)}</div></div>`);
-    }
-    if (pNext) cells.push(`<div><div class="l">${live && live.date === todayTW() ? "今天開盤前的預估" : "下一交易日上漲機率（含隔夜美股）"}</div><div class="v ${pNext.p >= .5 ? "up" : "down"}">${pct(pNext.p)}</div><div class="s">已納入美股至 ${esc(pre.us_last_session.sox.slice(5))}（美東）　隔夜費半 <span class="${sign(pre.overnight.sox)}">${signed(pre.overnight.sox * 100, 2)}%</span></div></div>`);
+    if (pNext) cells.push(`<div><div class="l">${live && live.date === todayTW() ? "今天開盤前預估（含隔夜美股）" : "下一交易日上漲機率（含隔夜美股）"}</div><div class="v ${pNext.p >= .5 ? "up" : "down"}">${pct(pNext.p)}</div><div class="s">已納入美股至 ${esc(pre.us_last_session.sox.slice(5))}（美東）　隔夜費半 <span class="${sign(pre.overnight.sox)}">${signed(pre.overnight.sox * 100, 2)}%</span></div></div>`);
     if (eod) cells.push(`<div><div class="l">台股收盤後預估（尚未納入美股）</div><div class="v ${eod.p >= .5 ? "up" : "down"}">${pct(eod.p)}</div><div class="s">${esc(TX.usMarket().line)}</div></div>`);
     if (!cells.length) { box.innerHTML = `<div><div class="l">漲跌機率</div><div class="s">第一次資料更新完成後會出現在這裡。</div></div>`; return; }
     cells.push(`<div><div class="l">準不準？</div><div class="s" style="margin:6px 0 8px">每一筆預測都留紀錄、隔天對答案。</div><a href="predict.html">看漲跌機率與成績單 →</a></div>`);
     box.innerHTML = cells.join("");
+    const day = await getJSON(`intraday/${todayTW()}.json`).catch(() => null);
+    $("#intra").innerHTML = TX.intradayBlock(day, live);
   }
 
   function renderBrief(b) {

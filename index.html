@@ -14,13 +14,15 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
 <meta name="description" content="每個交易日 08:20 更新的台股盤前建議、族群地圖、個股 K 線與漲跌機率。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=7">
+<link rel="stylesheet" href="assets/style.css?v=8">
 </head>
 <body>
 <div class="wrap">
   <nav class="topnav"><span class="brand">台股盤前看板</span><a href="index.html" aria-current="page">每日看板</a><a href="predict.html">漲跌機率</a></nav>
 
   <section class="prob" id="prob" aria-live="polite"><div><div class="l">漲跌機率</div><div class="s">載入中…</div></div></section>
+
+  <section id="intra" aria-live="polite"></section>
 
   <section id="brief" aria-live="polite"><p class="empty">正在載入盤前建議…</p></section>
   <section id="changes" hidden></section>
@@ -98,9 +100,9 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
 </div>
 
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-<script src="assets/common.js?v=7"></script>
-<script src="assets/stock.js?v=7"></script>
-<script src="assets/board.js?v=7"></script>
+<script src="assets/common.js?v=8"></script>
+<script src="assets/stock.js?v=8"></script>
+<script src="assets/board.js?v=8"></script>
 <script>
 (function(){
   const mob=TX.mode()==="mobile";
