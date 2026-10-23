@@ -14,7 +14,7 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
 <meta name="description" content="加權指數下一交易日與盤中收紅機率，附每日預測紀錄、命中率與校準表。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=4">
+<link rel="stylesheet" href="assets/style.css?v=6">
 </head>
 <body>
 <div class="wrap">
@@ -23,7 +23,7 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
   <section class="stack">
     <div class="meta"><span class="tag">加權指數 · 收盤價比前一日</span><span id="stamp"></span></div>
     <h1 id="headline">漲跌機率</h1>
-    <p class="lede">每天收盤後先算一次「下一交易日收紅機率」，隔天 08:05 加入隔夜美股再算一次，開盤後每 5 分鐘更新「今天收紅機率」。所有預測都存進紀錄，收盤後自動對答案，不會事後修改。</p>
+    <p class="lede">台股 13:30 收盤後先算一次「台股收盤後預估」，這時美股還沒開盤；美股收盤後，台北 08:05 加入隔夜美股再算一次；台股開盤後每 5 分鐘更新「今天收紅機率」。所有預測都存進紀錄，收盤後自動對答案，不會事後修改。</p>
   </section>
 
   <section id="now"></section>
@@ -43,7 +43,7 @@ if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport
   </section>
   <p class="foot">這是統計模型，不是投資建議。判斷有沒有價值的方式：累積至少 60 個交易日後，命中率要穩定高於「天天猜漲」，Brier 分數要低於基準。</p>
 </div>
-<script src="assets/common.js?v=4"></script>
-<script src="assets/predict.js?v=4"></script>
+<script src="assets/common.js?v=6"></script>
+<script src="assets/predict.js?v=6"></script>
 </body>
 </html>

@@ -18,8 +18,18 @@
     const preOk = pre && eod && pre.made_on === eod.made_on;
     const cards = [];
     if (intradayOn) cards.push(`<div class="card"><h3>今天盤中收紅機率 · ${esc(live.time)}</h3><div class="big ${tone(live.p_up)}">${pct(live.p_up)}</div>${bar(live.p_up)}<p class="foot">加權 ${fmt(live.price, 2)}（<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>）　資料：${esc(live.src)}</p></div>`);
-    if (preOk) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big ${tone(pre.p)}">${pct(pre.p)}</div>${bar(pre.p)}<p class="foot">${esc(pre.updated.replace("T", " "))} 更新　依 ${esc(pre.made_on)} 收盤與之後的美股交易日</p></div>`);
-    if (eod) cards.push(`<div class="card"><h3>收盤後預估 · 只看台股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">依 ${esc(eod.made_on)} 收盤計算</p></div>`);
+    if (preOk) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big ${tone(pre.p)}">${pct(pre.p)}</div>${bar(pre.p)}<p class="foot">${esc(pre.updated.replace("T", " "))} 更新　依 ${esc(pre.made_on)} 台股收盤，已納入美股至 ${esc(pre.us_last_session.sox)}（美東日期）</p></div>`);
+    if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">依 ${esc(eod.made_on)} 收盤，在美股開盤前算的${preOk ? "，留作對照" : ""}</p></div>`);
+    const us = TX.usMarket();
+    cards.push(`<div class="card"><h3>美股交易時間（台北時間）</h3>
+      <p style="margin:0 0 8px"><b>${esc(us.text)}</b></p>
+      <ul class="plain">
+        <li>現在是<b>${us.season}</b>，美股正常交易：<b class="num">${us.open}–隔日 ${us.close}</b></li>
+        <li>夏令（${us.summerFrom}–${us.winterFrom}）：21:30–隔日 04:00</li>
+        <li>冬令（${us.winterFrom} 起到明年 3 月）：22:30–隔日 05:00</li>
+        <li>美股還沒開盤的空窗：台股 13:30 收盤 → 美股 ${us.open} 開盤。這段時間只能用「台股收盤後預估」。</li>
+        <li>美股收盤後，台北 08:05 算出「含隔夜美股」機率，09:00 台股開盤。</li>
+      </ul><p class="foot">美股假日（例如感恩節）沒有交易，那晚不會有新的美股資料。</p></div>`);
     const main = intradayOn ? live.p_up : preOk ? pre.p : eod ? eod.p : null;
     if (main != null) $("#headline").textContent = intradayOn ? `今天收紅機率 ${pct(main)}` : `下一交易日上漲機率 ${pct(main)}`;
     $("#stamp").textContent = intradayOn ? `盤中 ${live.time} 更新` : preOk ? `盤前 ${pre.updated.slice(11, 16)} 更新` : eod ? `收盤後 ${eod.updated.slice(5, 16).replace("T", " ")} 更新` : "";
@@ -68,14 +78,14 @@
     let tables = "";
     if (pre && pre.buckets_sox) tables += bk(pre.buckets_sox, "歷史相似情境：隔夜費半漲跌 → 台股隔天收紅比例", which(pre.overnight.sox, pre.buckets_sox));
     if (eod && eod.buckets_r1) tables += bk(eod.buckets_r1, "歷史相似情境：台股當日漲跌 → 隔天收紅比例", which(eod.today_r1, eod.buckets_r1));
-    $("#why").innerHTML = `<div class="sec-head"><h2>這個機率怎麼來的</h2><p>邏輯迴歸模型，用 2005 年至今的加權指數${m === pre ? "與費半、台積電 ADR、那斯達克" : ""}訓練。紅色把機率往上推、綠色往下拉，長度代表影響大小；右邊是目前數值。</p></div>
+    $("#why").innerHTML = `<div class="sec-head"><h2>這個機率怎麼來的</h2><p>兩個機率預測的是同一件事：下一個交易日加權收盤會不會高於前一天。差別是「台股收盤後預估」只看台股，算的時候美股還沒開盤；「含隔夜美股」等美股收盤後再算，所以準很多。<br>邏輯迴歸模型，用 2005 年至今的加權指數${m === pre ? "與費半、台積電 ADR、那斯達克" : ""}訓練。紅色把機率往上推、綠色往下拉，長度代表影響大小；右邊是目前數值。</p></div>
       <div class="stack"><div class="card"><div class="drivers">${drv}</div></div><div class="two">${tables}</div></div>`;
   }
 
   function scoreSection(pre, eod, sc) {
     const bt = (m, name) => m ? `<tr><td>${name}</td><td>${fmt(m.eval.test_days)}</td><td><b>${pct(m.eval.hit_rate, 1)}</b></td><td>${pct(m.eval.base_hit_rate, 1)}</td><td><b>${m.eval.brier.toFixed(4)}</b></td><td>${m.eval.base_brier.toFixed(4)}</td></tr>` : "";
     const live = sc && sc.n ? ["pre", "eod", "0930", "1100", "1300"].filter((k) => sc[k]).map((k) => {
-      const lab = { pre: "盤前（含美股）", eod: "收盤後", "0930": "盤中 09:30", "1100": "盤中 11:00", "1300": "盤中 13:00" }[k];
+      const lab = { pre: "盤前（含美股）", eod: "台股收盤後（未含美股）", "0930": "盤中 09:30", "1100": "盤中 11:00", "1300": "盤中 13:00" }[k];
       return `<tr><td>${lab}</td><td>${fmt(sc[k].n)}</td><td><b>${pct(sc[k].hit_rate, 1)}</b></td><td>${pct(sc.base_hit_rate, 1)}</td><td><b>${sc[k].brier.toFixed(4)}</b></td><td>${sc.base_brier.toFixed(4)}</td></tr>`;
     }).join("") : "";
     const cal = pre ? pre.eval.calibration : eod ? eod.eval.calibration : [];
@@ -84,7 +94,7 @@
         <div class="card"><h3>實際紀錄（從上線第一天起，每天自動對答案）</h3>
           ${live ? `<div class="tbl"><table class="rt"><thead><tr><th>預測時點</th><th>天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${live}</tbody></table></div>` : '<p class="empty">還沒有對過答案的紀錄。第一筆會在下一個交易日收盤後出現；至少累積 60 天再判斷有沒有價值。</p>'}</div>
         <div class="card"><h3>歷史回測（用 2018 年以前的資料訓練，測試 2019 年至今）</h3>
-          <div class="tbl"><table class="rt"><thead><tr><th>模型</th><th>測試天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${bt(pre, "盤前（含美股）")}${bt(eod, "收盤後（只看台股）")}</tbody></table></div>
+          <div class="tbl"><table class="rt"><thead><tr><th>模型</th><th>測試天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${bt(pre, "盤前（含美股）")}${bt(eod, "台股收盤後（尚未納入美股）")}</tbody></table></div>
           <h3 style="margin-top:18px">校準：說幾成會漲，實際漲了幾成（盤前模型回測）</h3>
           <div class="tbl"><table><thead><tr><th>預測機率區間</th><th>天數</th><th>平均預測</th><th>實際收紅比例</th></tr></thead><tbody>
           ${cal.map((c) => `<tr><td>${esc(c.bin)}</td><td>${fmt(c.n)}</td><td>${pct(c.pred, 1)}</td><td>${pct(c.actual, 1)}</td></tr>`).join("")}</tbody></table></div>
@@ -97,7 +107,7 @@
     const p = (v) => (v == null ? "—" : `<span class="${tone(v)}">${pct(v)}</span>`);
     const hit = (v) => (v == null ? "—" : v ? "✓" : "✗");
     $("#log").innerHTML = `<div class="sec-head"><h2>每日預測紀錄</h2><p>最近 60 筆，最新在上。完整紀錄請用下方 CSV 或 Google 試算表。</p></div>
-      <div class="card"><div class="tbl"><table class="rt"><thead><tr><th>目標交易日</th><th>收盤後</th><th>盤前</th><th>09:30</th><th>11:00</th><th>13:00</th><th>實際漲跌</th><th>盤前對錯</th></tr></thead><tbody>
+      <div class="card"><div class="tbl"><table class="rt"><thead><tr><th>目標交易日</th><th>台股收盤後（未含美股）</th><th>含隔夜美股</th><th>09:30</th><th>11:00</th><th>13:00</th><th>實際漲跌</th><th>含美股預測對錯</th></tr></thead><tbody>
       ${rows.map((r) => `<tr><td>${esc(r.target || "下一交易日")}<br><span class="foot">（依 ${esc(r.made_on)} 收盤）</span></td><td>${p(r.p_eod)}</td><td>${p(r.p_pre)}</td><td>${p(r.p_0930)}</td><td>${p(r.p_1100)}</td><td>${p(r.p_1300)}</td><td class="${sign(r.ret_pct)}">${r.ret_pct == null ? "待開獎" : signed(r.ret_pct, 2) + "%"}</td><td>${hit(r.hit_pre ?? r.hit_eod)}</td></tr>`).join("")}
       </tbody></table></div></div>`;
   }

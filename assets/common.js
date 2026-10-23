@@ -18,6 +18,23 @@ window.TX = (function () {
   // Split prose into readable bullet points: arrays pass through, strings split on full stops / semicolons.
   const points = (v) => Array.isArray(v) ? v : String(v || "").split(/(?<=[。；])/).map((s) => s.replace(/[；]$/, "。").trim()).filter(Boolean);
   const todayTW = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+  // US regular session (09:30–16:00 New York) expressed in Taipei time; DST is read from the New York time zone itself.
+  function usMarket(now = new Date()) {
+    const ny = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short" })
+      .formatToParts(now).reduce((o, p) => ((o[p.type] = p.value), o), {});
+    const dst = ny.timeZoneName === "EDT";
+    const open = dst ? "21:30" : "22:30", close = dst ? "04:00" : "05:00";
+    const mins = (+ny.hour % 24) * 60 + +ny.minute;
+    const weekday = !["Sat", "Sun"].includes(ny.weekday);
+    let state, text;
+    if (weekday && mins >= 570 && mins < 960) { state = "open"; text = `美股交易中，台北時間 ${close} 收盤`; }
+    else if (weekday && mins < 570) { state = "pre"; text = `美股尚未開盤，台北時間今晚 ${open} 開盤`; }
+    else { state = "closed"; text = ny.weekday === "Fri" || !weekday ? `美股已收盤，下次開盤是台北時間週一晚上 ${open}` : `美股已收盤，台北時間今晚 ${open} 再開盤`; }
+    // DST switch dates for this year: 2nd Sunday of March, 1st Sunday of November
+    const y = now.getFullYear();
+    const nthSun = (m, n) => { const d = new Date(Date.UTC(y, m, 1)); const first = (7 - d.getUTCDay()) % 7 + 1; return `${m + 1}/${first + 7 * (n - 1)}`; };
+    return { dst, open, close, state, text, season: dst ? "夏令時間" : "冬令時間", summerFrom: nthSun(2, 2), winterFrom: nthSun(10, 1) };
+  }
   const mode = () => document.documentElement.dataset.mode || "desktop";
   // Give every cell of a .rt table its column name, so phones can show rows as labelled cards.
   function labelTables(root = document) {
@@ -40,5 +57,5 @@ window.TX = (function () {
     nav.appendChild(box);
   }
   document.addEventListener("DOMContentLoaded", () => { initModeSwitch(); labelTables(); });
-  return { REPO, DATA, getJSON, esc, dirCls, sign, pct, fmt, signed, points, todayTW, mode, labelTables };
+  return { REPO, DATA, getJSON, esc, dirCls, sign, pct, fmt, signed, points, todayTW, mode, labelTables, usMarket };
 })();

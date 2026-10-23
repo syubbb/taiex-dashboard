@@ -14,8 +14,15 @@
     if (live && live.date === todayTW()) {
       cells.push(`<div><div class="l">今天盤中收紅機率（${esc(live.time)}）</div><div class="v ${live.p_up >= .5 ? "up" : "down"}">${pct(live.p_up)}</div><div class="s">加權 ${fmt(live.price, 2)}　<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>　開盤前預估 ${pct(live.prior)}</div></div>`);
     }
-    if (pNext) cells.push(`<div><div class="l">${live && live.date === todayTW() ? "今天開盤前的預估" : "下一交易日上漲機率（含隔夜美股）"}</div><div class="v ${pNext.p >= .5 ? "up" : "down"}">${pct(pNext.p)}</div><div class="s">${esc(pre.updated.replace("T", " ").slice(5, 16))} 更新　隔夜費半 <span class="${sign(pre.overnight.sox)}">${signed(pre.overnight.sox * 100, 2)}%</span></div></div>`);
-    if (eod) cells.push(`<div><div class="l">收盤後預估（只看台股）</div><div class="v ${eod.p >= .5 ? "up" : "down"}">${pct(eod.p)}</div><div class="s">依 ${esc(eod.made_on)} 收盤計算</div></div>`);
+    if (pNext) cells.push(`<div><div class="l">${live && live.date === todayTW() ? "今天開盤前的預估" : "下一交易日上漲機率（含隔夜美股）"}</div><div class="v ${pNext.p >= .5 ? "up" : "down"}">${pct(pNext.p)}</div><div class="s">已納入美股至 ${esc(pre.us_last_session.sox.slice(5))}（美東）　隔夜費半 <span class="${sign(pre.overnight.sox)}">${signed(pre.overnight.sox * 100, 2)}%</span></div></div>`);
+    if (eod && !pNext) {
+      const us = TX.usMarket();
+      cells.push(`<div><div class="l">台股收盤後預估（尚未納入美股）</div><div class="v ${eod.p >= .5 ? "up" : "down"}">${pct(eod.p)}</div><div class="s">依 ${esc(eod.made_on)} 收盤計算。${esc(us.text)}；美股收盤後，08:05 會改算含美股的機率。</div></div>`);
+    } else if (eod) {
+      cells.push(`<div><div class="l">台股收盤後預估（尚未納入美股）</div><div class="v ${eod.p >= .5 ? "up" : "down"}">${pct(eod.p)}</div><div class="s">依 ${esc(eod.made_on)} 收盤、美股開盤前算的，留作對照</div></div>`);
+    }
+    { const us = TX.usMarket();
+      cells.push(`<div><div class="l">美股交易時間（台北時間）</div><div class="s" style="margin-top:4px">現在是<b>${us.season}</b>：<b class="num">${us.open}–隔日 ${us.close}</b><br>夏令（${us.summerFrom}–${us.winterFrom}）21:30–04:00<br>冬令（${us.winterFrom} 起）22:30–05:00<br>台股 13:30 收盤到美股開盤前，美股資訊還沒進來。<br><b>${esc(us.text)}</b></div></div>`); }
     if (!cells.length) { box.innerHTML = `<div><div class="l">漲跌機率</div><div class="s">第一次資料更新完成後會出現在這裡。</div></div>`; return; }
     cells.push(`<div><div class="l">準不準？</div><div class="s" style="margin:6px 0 8px">每一筆預測都留紀錄、隔天對答案。</div><a href="predict.html">看漲跌機率與成績單 →</a></div>`);
     box.innerHTML = cells.join("");
