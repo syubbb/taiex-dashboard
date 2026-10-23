@@ -72,8 +72,8 @@
   }
 
   // Each bullet gets a category chip so a reader can tell a demand driver from a flow or a valuation point at a glance.
-  const WHY_TAGS = [["籌碼", /外資|投信|自營|買超|賣超|融資|提款|籌碼|連續大買|掃貨/], ["競爭", /長鑫|競爭|對手|轉單/],
-    ["漲價", /漲價|報價|盤價|合約價|調漲|價格從|價格上/], ["需求", /需求|訂單|拉貨|出貨|產能|擴產|缺貨|供不應求|稼動率|放量|量產|部署|採購|建置/],
+  const WHY_TAGS = [["籌碼", /外資|投信|自營|買超|賣超|融資|提款|籌碼|連續大買|掃貨/],
+    ["漲價", /漲價|報價|盤價|合約價|調漲|價格從|價格上/], ["競爭", /長鑫|競爭|對手|轉單/], ["需求", /需求|訂單|拉貨|出貨|產能|擴產|缺貨|供不應求|稼動率|放量|量產|部署|採購|建置/],
     ["獲利", /EPS|獲利|營收|毛利|淨利/], ["評價", /目標價|本益比|評價|估值|漲太多|漲多/], ["事件", /宣布|公布|峰會|財報|法說|選舉|公投|延後|延到|傳出/]];
   const OUT_TAGS = [["觀察點", /訊號|轉折|觀察|確認|要等|等量|看量|是加碼|觀察點/], ["短線", /短線|近期|先跌|先看/], ["中長期", /中期|長線|數季|年|季/]];
   const tagOf = (t, rules, dflt) => { const it = typeof t === "object" && t ? t : null; if (it && it.tag) return it.tag; for (const [k, re] of rules) if (re.test(t)) return k; return dflt; };
