@@ -71,29 +71,58 @@
       </div>`;
   }
 
+  // Each bullet gets a category chip so a reader can tell a demand driver from a flow or a valuation point at a glance.
+  const WHY_TAGS = [["籌碼", /外資|投信|自營|買超|賣超|融資|提款|籌碼|連續大買|掃貨/], ["競爭", /長鑫|競爭|對手|轉單/],
+    ["漲價", /漲價|報價|盤價|合約價|調漲|價格從|價格上/], ["需求", /需求|訂單|拉貨|出貨|產能|擴產|缺貨|供不應求|稼動率|放量|量產|部署|採購|建置/],
+    ["獲利", /EPS|獲利|營收|毛利|淨利/], ["評價", /目標價|本益比|評價|估值|漲太多|漲多/], ["事件", /宣布|公布|峰會|財報|法說|選舉|公投|延後|延到|傳出/]];
+  const OUT_TAGS = [["觀察點", /訊號|轉折|觀察|確認|要等|等量|看量|是加碼|觀察點/], ["短線", /短線|近期|先跌|先看/], ["中長期", /中期|長線|數季|年|季/]];
+  const tagOf = (t, rules, dflt) => { const it = typeof t === "object" && t ? t : null; if (it && it.tag) return it.tag; for (const [k, re] of rules) if (re.test(t)) return k; return dflt; };
+  const textOf = (t) => (typeof t === "object" && t ? t.text : t);
+  const STATUS = { hot: ["主流", "up"], cool: ["降溫", "down"], rise: ["可能轉好", "amber"] };
+
   function renderSectors(b) {
     const box = $("#sectors");
     const S = b.sectors;
     if (!S) { box.hidden = true; return; }
     const cats = [["hot", "主流族群"], ["cool", "降溫族群"], ["rise", "近期可能轉好"]];
     if (!S[tab]) tab = "hot";
-    const blk = (title, v) => { const ps = points(v); return ps.length ? `<div class="blk"><h4>${title}</h4><ul>${ps.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>` : ""; };
+    const list = (v) => (Array.isArray(v) ? v : points(v));
+    const rows = (items, fn) => items.map((it) => { const [chip, body] = fn(it); return `<li class="it">${chip}<span>${esc(body)}</span></li>`; }).join("");
+    const sec = (cls, title, items, fn) => items.length ? `<section class="blk ${cls}"><h4>${title}</h4><ul class="its">${rows(items, fn)}</ul></section>` : "";
+    const whyFn = (t) => [`<span class="tg">${esc(tagOf(t, WHY_TAGS, "說明"))}</span>`, textOf(t)];
+    const outFn = (t) => [`<span class="tg">${esc(tagOf(t, OUT_TAGS, "走勢"))}</span>`, textOf(t)];
+    const bestFn = (t) => { const x = textOf(t); const m = x.match(/^([^：:]{1,8})[：:](.+)$/); return m ? [`<span class="tg best">${esc(m[1])}</span>`, m[2].trim()] : [`<span class="tg best">建議</span>`, x]; };
+    const riskFn = (t) => [`<span class="tg risk">風險</span>`, textOf(t)];
     const chip = (s) => {
       const px = prices[s.code];
       return `<button type="button" class="stk ${s.best ? "best" : ""}" data-code="${esc(s.code)}" data-name="${esc(s.name)}" aria-expanded="false">
         <span class="top"><b>${esc(s.name)}</b><code>${esc(s.code)}</code>${s.best ? '<span class="badge">較看好</span>' : ""}${px && px.close != null ? `<span class="px ${sign(px.chg_pct)}">${fmt(px.close, 2)} ${signed(px.chg_pct, 2)}%</span>` : ""}</span>
         <p>${esc(s.note)}</p></button>`;
     };
-    const grp = (g, i) => `
-      <article class="grp">
-        <div class="grp-h"><b>${esc(g.name)}</b><span class="tr ${dirCls(g.dir)}">${esc(g.trend)}</span></div>
-        <div class="blocks">${blk("為什麼", g.why)}${blk("未來走勢", g.outlook)}${blk("誰比較好", g.best)}${blk("要小心", g.risk)}</div>
-        <div><h3>代表股　<span class="hint">點股票看 K 線、法人、營收與 EPS</span></h3><div class="stocks">${(g.stocks || []).map(chip).join("")}</div></div>
-        <div class="panel-host" id="ph-${i}"></div>
+    const [stLabel, stCls] = STATUS[tab];
+    const grp = (g, i) => {
+      const bestNames = (g.stocks || []).filter((s) => s.best).map((s) => s.name);
+      return `
+      <article class="grp" id="g-${tab}-${i}">
+        <header class="grp-h"><span class="st ${stCls}">${stLabel}</span><b>${esc(g.name)}</b></header>
+        <p class="grp-sum"><span class="${dirCls(g.dir)}">${esc(g.trend)}</span>${bestNames.length ? `<span>較看好：<b>${esc(bestNames.join("、"))}</b></span>` : ""}</p>
+        ${sec("why", "原因", list(g.why), whyFn)}
+        ${sec("out", "接下來怎麼走", list(g.outlook), outFn)}
+        ${sec("best", "誰比較好", list(g.best), bestFn)}
+        ${sec("risk", "要小心", list(g.risk), riskFn)}
+        <section class="blk"><h4>代表股　<span class="hint">點股票看 K 線、法人、營收與 EPS</span></h4><div class="stocks">${(g.stocks || []).map(chip).join("")}</div></section>
+        <div class="panel-host"></div>
       </article>`;
+    };
+    const overview = cats.map(([k]) => (S[k] || []).map((g, i) => {
+      const [l, c] = STATUS[k];
+      const bn = (g.stocks || []).filter((s) => s.best).map((s) => s.name).join("、");
+      return `<button type="button" class="ov" data-jump="${k}:${i}"><span class="st ${c}">${l}</span><span class="ov-n">${esc(g.name)}</span>${bn ? `<span class="ov-b">${esc(bn)}</span>` : ""}</button>`;
+    }).join("")).join("");
     box.hidden = false;
     box.innerHTML = `
       <div class="sec-head"><h2>族群地圖</h2><p>${esc(S.asOf || "")}</p></div>
+      <div class="card ovs"><h3>一覽（點一下跳到該族群）</h3>${overview}</div>
       <div class="tabs" role="tablist">${cats.map(([k, l]) => `<button type="button" role="tab" data-k="${k}" aria-selected="${tab === k}">${l}<span class="n">${(S[k] || []).length}</span></button>`).join("")}</div>
       <div class="grps">${(S[tab] || []).map(grp).join("") || '<p class="empty">這一類目前沒有族群。</p>'}</div>`;
   }
@@ -111,6 +140,8 @@
   }
 
   $("#sectors").addEventListener("click", (e) => {
+    const j = e.target.closest("button[data-jump]");
+    if (j) { const [k, i] = j.dataset.jump.split(":"); tab = k; try { localStorage.setItem("sectorTab", tab); } catch (err) {} renderSectors(brief); const el = document.getElementById(`g-${k}-${i}`); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     const t = e.target.closest("button[data-k]");
     if (t) { tab = t.dataset.k; try { localStorage.setItem("sectorTab", tab); } catch (err) {} renderSectors(brief); return; }
     const s = e.target.closest(".stk");
