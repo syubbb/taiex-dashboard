@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+/* View mode: 手機 lays the page out for the phone's width; 網頁 shows the full desktop layout (zoomed to fit on a phone). */
+(function(){var m=null;try{m=localStorage.getItem("viewMode")}catch(e){}
+if(m!=="mobile"&&m!=="desktop"){m=Math.min(screen.width,innerWidth||screen.width)<760?"mobile":"desktop"}
+document.documentElement.dataset.mode=m;
+if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport"]').setAttribute("content","width=1080")}})();
+</script>
 <title>台股漲跌機率</title>
 <meta name="description" content="加權指數下一交易日與盤中收紅機率，附每日預測紀錄、命中率與校準表。">
 <link rel="preconnect" href="https://fonts.googleapis.com">

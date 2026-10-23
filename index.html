@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+/* View mode: 手機 lays the page out for the phone's width; 網頁 shows the full desktop layout (zoomed to fit on a phone). */
+(function(){var m=null;try{m=localStorage.getItem("viewMode")}catch(e){}
+if(m!=="mobile"&&m!=="desktop"){m=Math.min(screen.width,innerWidth||screen.width)<760?"mobile":"desktop"}
+document.documentElement.dataset.mode=m;
+if(m==="desktop"&&screen.width<1000){document.querySelector('meta[name="viewport"]').setAttribute("content","width=1080")}})();
+</script>
 <title>台股盤前看板</title>
 <meta name="description" content="每個交易日 08:20 更新的台股盤前建議、族群地圖、個股 K 線與漲跌機率。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +57,7 @@
 
   <section>
     <div class="sec-head"><h2>時間軸與觀察重點</h2></div>
-    <div class="tl"><table>
+    <div class="tl"><table class="rt">
       <thead><tr><th>階段</th><th>時間</th><th>預估區間</th><th>會遇到的狀況</th><th>觀察重點</th></tr></thead>
       <tbody>
         <tr><td class="ph">震盪打底</td><td>2026/10 底–11 月中</td><td class="rng">44,500–48,000</td><td>FOMC（10/29 凌晨）、美國期中選舉 11/3、Q3 財報 11/14 截止、輝達財報、MSCI 調整</td><td>外資期貨淨空單、季線能否收復、美 10 年債 5% 關卡</td></tr>
@@ -96,30 +103,33 @@
 <script src="assets/board.js"></script>
 <script>
 (function(){
+  const mob=TX.mode()==="mobile";
   const months=["26/10","11","12","27/1","2","3","4","5","6","7","8","9","10","11","12"];
   const base=[46.0,45.4,48.6,49.6,50.2,51.2,51.6,49.6,50.2,51.2,50.6,49.6,50.8,52.6,54.0];
   const bull=[46.0,46.8,50.2,52.2,53.6,55.0,56.0,54.6,55.6,57.0,57.0,56.4,58.0,59.4,60.5];
   const bear=[46.0,43.6,45.0,45.2,44.6,44.0,43.0,41.2,41.6,42.0,40.4,39.0,39.6,40.4,40.8];
-  const events=[{a:1.6,b:2.3,t:"九合一"},{a:3.3,b:3.7,t:"台積電法說"},{a:5,b:6.2,t:"公布配息"},{a:8.8,b:10.6,t:"除息旺季"},{a:11.6,b:12.4,t:"中共二十一大"},{a:13,b:14,t:"選前行情"}];
-  const W=760,H=340,L=54,R=18,T=40,B=44,y0=36,y1=64;
+  // on phones event labels alternate between two rows so they never collide
+  const events=[{a:1.6,b:2.3,t:"九合一",s:"選舉"},{a:3.3,b:3.7,t:"台積電法說",s:"法說"},{a:5,b:6.2,t:"公布配息",s:"配息"},{a:8.8,b:10.6,t:"除息旺季",s:"除息"},{a:11.6,b:12.4,t:"中共二十一大",s:"二十一大"},{a:13,b:14,t:"選前行情",s:"選前"}];
+  const W=mob?380:760,H=mob?330:340,L=mob?40:54,R=mob?10:18,T=mob?50:40,B=mob?34:44,y0=36,y1=64,fs=mob?12:12;
   const X=i=>L+i*(W-L-R)/(months.length-1),Y=v=>T+(y1-v)*(H-T-B)/(y1-y0);
   const svg=document.getElementById("path"),NS="http://www.w3.org/2000/svg";
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
   const el=(n,a,t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;svg.appendChild(e);return e;};
-  const txt=(x,y,s,o={})=>el("text",Object.assign({x,y,"font-size":"12",fill:"var(--muted)","font-family":"var(--sans)"},o),s);
-  events.forEach(ev=>{el("rect",{x:X(ev.a),y:T,width:X(ev.b)-X(ev.a),height:H-T-B,fill:"var(--band2)"});txt((X(ev.a)+X(ev.b))/2,T-12,ev.t,{"text-anchor":"middle"});});
-  for(let v=40;v<=60;v+=5){el("line",{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:"var(--line)"});txt(L-8,Y(v)+4,v+"K",{"text-anchor":"end","font-family":"var(--mono)"});}
-  months.forEach((m,i)=>txt(X(i),H-B+20,m,{"text-anchor":"middle","font-family":"var(--mono)"}));
+  const txt=(x,y,s,o={})=>el("text",Object.assign({x,y,"font-size":fs,fill:"var(--muted)","font-family":"var(--sans)"},o),s);
+  events.forEach((ev,i)=>{el("rect",{x:X(ev.a),y:T,width:X(ev.b)-X(ev.a),height:H-T-B,fill:"var(--band2)"});
+    const cx=(X(ev.a)+X(ev.b))/2;txt(Math.min(Math.max(cx,L+14),W-R-14),mob?(i%2?T-8:T-26):T-12,mob?ev.s:ev.t,{"text-anchor":"middle"});});
+  for(let v=40;v<=60;v+=5){el("line",{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:"var(--line)"});txt(L-6,Y(v)+4,v+"K",{"text-anchor":"end","font-family":"var(--mono)"});}
+  months.forEach((m,i)=>{if(mob&&i%3)return;txt(X(i),H-B+20,mob&&i===0?"10月":m,{"text-anchor":"middle","font-family":"var(--mono)"});});
   const pts=a=>a.map((v,i)=>X(i)+","+Y(v)).join(" ");
   el("polygon",{points:pts(bull)+" "+bear.map((v,i)=>[i,v]).reverse().map(([i,v])=>X(i)+","+Y(v)).join(" "),fill:"var(--band)"});
   el("polyline",{points:pts(bull),fill:"none",stroke:"var(--up)","stroke-width":1.8,"stroke-dasharray":"5 4"});
   el("polyline",{points:pts(bear),fill:"none",stroke:"var(--down)","stroke-width":1.8,"stroke-dasharray":"5 4"});
-  el("polyline",{points:pts(base),fill:"none",stroke:"var(--navy)","stroke-width":3,"stroke-linejoin":"round"});
+  el("polyline",{points:pts(base),fill:"none",stroke:"var(--navy)","stroke-width":mob?2.5:3,"stroke-linejoin":"round"});
   el("line",{x1:X(0),x2:X(0),y1:Y(46.04)-6,y2:Y(51.2),stroke:"var(--ink)"});
-  el("circle",{cx:X(0),cy:Y(46.04),r:5,fill:"var(--navy)"});
-  txt(X(0)+4,Y(51.2)-6,"現在 46,041",{"font-size":"13",fill:"var(--ink)","font-weight":"700"});
-  el("circle",{cx:X(1),cy:Y(45.4),r:4,fill:"var(--paper)",stroke:"var(--navy)","stroke-width":2});
-  txt(X(1),Y(43.6)+20,"打底區",{"text-anchor":"middle"});
-  [[base,"var(--navy)"],[bull,"var(--up)"],[bear,"var(--down)"]].forEach(([a,c])=>{const v=a[a.length-1];txt(X(14)-4,Y(v)-8,Math.round(v*1000).toLocaleString(),{"text-anchor":"end","font-weight":"700",fill:c,"font-family":"var(--mono)"});});
+  el("circle",{cx:X(0),cy:Y(46.04),r:mob?4:5,fill:"var(--navy)"});
+  txt(X(0)+4,Y(51.2)-6,"現在 46,041",{"font-size":mob?12:13,fill:"var(--ink)","font-weight":"700"});
+  if(!mob){el("circle",{cx:X(1),cy:Y(45.4),r:4,fill:"var(--paper)",stroke:"var(--navy)","stroke-width":2});txt(X(1),Y(43.6)+20,"打底區",{"text-anchor":"middle"});}
+  [[base,"var(--navy)"],[bull,"var(--up)"],[bear,"var(--down)"]].forEach(([a,c])=>{const v=a[a.length-1];txt(X(14)-2,Y(v)-8,Math.round(v*1000).toLocaleString(),{"text-anchor":"end","font-weight":"700",fill:c,"font-family":"var(--mono)"});});
 })();
 </script>
 </body>

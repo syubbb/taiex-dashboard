@@ -29,13 +29,14 @@
   function intradaySection(day) {
     const box = $("#intraday");
     if (!day || !day.points || !day.points.length) { box.innerHTML = ""; return; }
-    const W = 760, H = 260, L = 48, R = 16, T = 16, B = 34;
+    const mob = TX.mode() === "mobile";
+    const W = mob ? 380 : 760, H = mob ? 240 : 260, L = 44, R = 14, T = 16, B = 34;
     const tmin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m - 540; };
     const X = (t) => L + (Math.min(Math.max(tmin(t), 0), 270) / 270) * (W - L - R);
     const Y = (p) => T + (1 - p) * (H - T - B);
     const pts = day.points;
     const line = pts.map((q) => `${X(q[0]).toFixed(1)},${Y(q[3]).toFixed(1)}`).join(" ");
-    const ticks = ["09:00", "10:00", "11:00", "12:00", "13:00", "13:30"];
+    const ticks = mob ? ["09:00", "10:30", "12:00", "13:30"] : ["09:00", "10:00", "11:00", "12:00", "13:00", "13:30"];
     const last = pts[pts.length - 1];
     box.innerHTML = `<div class="sec-head"><h2>今天盤中機率走勢</h2><p>開盤前預估 ${pct(day.prior)}　近 20 日單日波動 ${(day.sigma * 100).toFixed(2)}%　資料：${esc(day.src || "")}</p></div>
       <div class="card"><div class="chart-box"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="盤中收紅機率走勢">
@@ -81,9 +82,9 @@
     $("#score").innerHTML = `<div class="sec-head"><h2>成績單</h2><p>命中率越高越好、Brier 分數越低越好。「基準」是什麼都不看、只用歷史漲跌比例去猜。</p></div>
       <div class="stack">
         <div class="card"><h3>實際紀錄（從上線第一天起，每天自動對答案）</h3>
-          ${live ? `<div class="tbl"><table><thead><tr><th>預測時點</th><th>天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${live}</tbody></table></div>` : '<p class="empty">還沒有對過答案的紀錄。第一筆會在下一個交易日收盤後出現；至少累積 60 天再判斷有沒有價值。</p>'}</div>
+          ${live ? `<div class="tbl"><table class="rt"><thead><tr><th>預測時點</th><th>天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${live}</tbody></table></div>` : '<p class="empty">還沒有對過答案的紀錄。第一筆會在下一個交易日收盤後出現；至少累積 60 天再判斷有沒有價值。</p>'}</div>
         <div class="card"><h3>歷史回測（用 2018 年以前的資料訓練，測試 2019 年至今）</h3>
-          <div class="tbl"><table><thead><tr><th>模型</th><th>測試天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${bt(pre, "盤前（含美股）")}${bt(eod, "收盤後（只看台股）")}</tbody></table></div>
+          <div class="tbl"><table class="rt"><thead><tr><th>模型</th><th>測試天數</th><th>命中率</th><th>基準命中率</th><th>Brier</th><th>基準 Brier</th></tr></thead><tbody>${bt(pre, "盤前（含美股）")}${bt(eod, "收盤後（只看台股）")}</tbody></table></div>
           <h3 style="margin-top:18px">校準：說幾成會漲，實際漲了幾成（盤前模型回測）</h3>
           <div class="tbl"><table><thead><tr><th>預測機率區間</th><th>天數</th><th>平均預測</th><th>實際收紅比例</th></tr></thead><tbody>
           ${cal.map((c) => `<tr><td>${esc(c.bin)}</td><td>${fmt(c.n)}</td><td>${pct(c.pred, 1)}</td><td>${pct(c.actual, 1)}</td></tr>`).join("")}</tbody></table></div>
@@ -96,8 +97,8 @@
     const p = (v) => (v == null ? "—" : `<span class="${tone(v)}">${pct(v)}</span>`);
     const hit = (v) => (v == null ? "—" : v ? "✓" : "✗");
     $("#log").innerHTML = `<div class="sec-head"><h2>每日預測紀錄</h2><p>最近 60 筆，最新在上。完整紀錄請用下方 CSV 或 Google 試算表。</p></div>
-      <div class="card"><div class="tbl"><table><thead><tr><th>目標交易日</th><th>收盤後</th><th>盤前</th><th>09:30</th><th>11:00</th><th>13:00</th><th>實際漲跌</th><th>盤前對錯</th></tr></thead><tbody>
-      ${rows.map((r) => `<tr><td>${esc(r.target || "下一交易日")}<br><span class="foot">依 ${esc(r.made_on)} 收盤</span></td><td>${p(r.p_eod)}</td><td>${p(r.p_pre)}</td><td>${p(r.p_0930)}</td><td>${p(r.p_1100)}</td><td>${p(r.p_1300)}</td><td class="${sign(r.ret_pct)}">${r.ret_pct == null ? "待開獎" : signed(r.ret_pct, 2) + "%"}</td><td>${hit(r.hit_pre ?? r.hit_eod)}</td></tr>`).join("")}
+      <div class="card"><div class="tbl"><table class="rt"><thead><tr><th>目標交易日</th><th>收盤後</th><th>盤前</th><th>09:30</th><th>11:00</th><th>13:00</th><th>實際漲跌</th><th>盤前對錯</th></tr></thead><tbody>
+      ${rows.map((r) => `<tr><td>${esc(r.target || "下一交易日")}<br><span class="foot">（依 ${esc(r.made_on)} 收盤）</span></td><td>${p(r.p_eod)}</td><td>${p(r.p_pre)}</td><td>${p(r.p_0930)}</td><td>${p(r.p_1100)}</td><td>${p(r.p_1300)}</td><td class="${sign(r.ret_pct)}">${r.ret_pct == null ? "待開獎" : signed(r.ret_pct, 2) + "%"}</td><td>${hit(r.hit_pre ?? r.hit_eod)}</td></tr>`).join("")}
       </tbody></table></div></div>`;
   }
 
@@ -107,6 +108,7 @@
       getJSON("live.json").catch(() => null), getJSON("predictions.json").catch(() => []), getJSON("scorecard.json").catch(() => null)]);
     const day = await getJSON(`intraday/${todayTW()}.json`).catch(() => null);
     nowSection(pre, eod, live); intradaySection(day); whySection(pre, eod); scoreSection(pre, eod, sc); logSection(preds || []);
+    TX.labelTables();
   }
   load();
   setInterval(load, 60000);

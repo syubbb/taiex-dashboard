@@ -177,3 +177,67 @@ details.src ul{margin:6px 0 0;padding-left:1.4em;display:grid;gap:4px}
 .copy code{font-family:var(--mono);font-size:13px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-x:auto;max-width:100%;white-space:nowrap}
 .copy button{border:1px solid var(--navy);background:var(--navy);color:var(--paper);border-radius:6px;padding:5px 12px;font-size:14px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* ---------- layout guards: grid children may shrink, so wide tables scroll inside their box instead of widening the page ---------- */
+.wrap,.stack{grid-template-columns:minmax(0,1fr)}
+.wrap > *,.stack > *,.two > *,.blocks > *{min-width:0}
+.two{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+
+/* ---------- view-mode switch ---------- */
+.modes{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:4px}
+.modes button{border:0;background:var(--paper);color:var(--muted);font-size:13px;font-weight:700;padding:3px 12px}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* ---------- mobile mode ---------- */
+html[data-mode="mobile"] body{font-size:16px;line-height:1.75}
+html[data-mode="mobile"] .wrap{gap:28px;padding:10px 14px 48px}
+html[data-mode="mobile"] .topnav{gap:6px 12px}
+html[data-mode="mobile"] .topnav .brand{font-size:17px;width:100%}
+html[data-mode="mobile"] .topnav a{font-size:15px}
+html[data-mode="mobile"] .modes{margin-left:auto}
+html[data-mode="mobile"] h1{font-size:26px;line-height:1.4}
+html[data-mode="mobile"] h2{font-size:21px}
+html[data-mode="mobile"] .lede{font-size:16px}
+html[data-mode="mobile"] .card,html[data-mode="mobile"] .grp,html[data-mode="mobile"] .panel{padding:16px 14px;border-radius:10px}
+html[data-mode="mobile"] .prob{grid-template-columns:1fr 1fr}
+html[data-mode="mobile"] .prob > div{padding:12px 14px}
+html[data-mode="mobile"] .prob .v{font-size:28px}
+html[data-mode="mobile"] .prob > div:last-child:nth-child(odd){grid-column:1/-1}
+html[data-mode="mobile"] .metrics{grid-template-columns:1fr 1fr}
+html[data-mode="mobile"] .metric{padding:12px 14px}
+html[data-mode="mobile"] .metric .v{font-size:21px}
+html[data-mode="mobile"] .metric .c{font-size:13px}
+html[data-mode="mobile"] .days{grid-template-columns:repeat(3,minmax(0,1fr))}
+html[data-mode="mobile"] .day b{font-size:15px}
+html[data-mode="mobile"] .stance-word{font-size:26px}
+html[data-mode="mobile"] .two,html[data-mode="mobile"] .blocks,html[data-mode="mobile"] .evs,html[data-mode="mobile"] .scen{grid-template-columns:minmax(0,1fr)}
+html[data-mode="mobile"] .stocks{grid-template-columns:minmax(0,1fr)}
+html[data-mode="mobile"] .grp-h b{font-size:19px}
+html[data-mode="mobile"] .tabs button{font-size:14px;padding:6px 12px}
+html[data-mode="mobile"] .nw{grid-template-columns:58px minmax(0,1fr)}
+html[data-mode="mobile"] .nw time{grid-column:1/-1}
+html[data-mode="mobile"] .nw .d,html[data-mode="mobile"] .nw .w{grid-column:1/-1}
+html[data-mode="mobile"] .cmp{font-size:14px}
+html[data-mode="mobile"] .cmp td,html[data-mode="mobile"] .cmp th{padding:8px 4px}
+html[data-mode="mobile"] .kchart{height:300px}
+html[data-mode="mobile"] .panel-h b{font-size:20px}
+html[data-mode="mobile"] .seg button{padding:4px 9px;font-size:13.5px}
+html[data-mode="mobile"] .tbl table{font-size:13.5px}
+html[data-mode="mobile"] .tbl td,html[data-mode="mobile"] .tbl th{padding:6px 5px}
+html[data-mode="mobile"] .chart-box svg{min-width:0}
+html[data-mode="mobile"] .big{font-size:44px}
+html[data-mode="mobile"] .drv{grid-template-columns:104px minmax(0,1fr) 64px;font-size:13.5px}
+html[data-mode="mobile"] .copy code{white-space:normal;word-break:break-all}
+/* wide tables become stacked cards on phones: each cell shows its column name */
+html[data-mode="mobile"] table.rt{min-width:0!important}
+html[data-mode="mobile"] table.rt thead{display:none}
+html[data-mode="mobile"] table.rt tr{display:block;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0 0 10px;background:var(--paper)}
+html[data-mode="mobile"] table.rt td{display:flex;justify-content:space-between;align-items:baseline;gap:14px;border:0;padding:5px 0;text-align:right;white-space:normal;line-height:1.6}
+html[data-mode="mobile"] table.rt td::before{content:attr(data-l);color:var(--muted);font-family:var(--sans);font-weight:700;font-size:13px;text-align:left;flex:none}
+html[data-mode="mobile"] table.rt td:first-child{display:block;text-align:left;font-weight:700;font-size:16px;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+html[data-mode="mobile"] table.rt td:first-child::before{content:none}
+html[data-mode="mobile"] .tl{border:0;background:none;overflow:visible}
+html[data-mode="mobile"] .tl td{color:var(--ink)}
+html[data-mode="mobile"] .tl td.rng{font-size:16px}
+html[data-mode="mobile"] .tl table.rt td{display:block;text-align:left}
+html[data-mode="mobile"] .tl table.rt td::before{display:block;margin-bottom:2px}
