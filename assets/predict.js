@@ -19,17 +19,7 @@
     const cards = [];
     if (intradayOn) cards.push(`<div class="card"><h3>今天盤中收紅機率 · ${esc(live.time)}</h3><div class="big ${tone(live.p_up)}">${pct(live.p_up)}</div>${bar(live.p_up)}<p class="foot">加權 ${fmt(live.price, 2)}（<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>）　資料：${esc(live.src)}</p></div>`);
     if (preOk) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big ${tone(pre.p)}">${pct(pre.p)}</div>${bar(pre.p)}<p class="foot">${esc(pre.updated.replace("T", " "))} 更新　依 ${esc(pre.made_on)} 台股收盤，已納入美股至 ${esc(pre.us_last_session.sox)}（美東日期）</p></div>`);
-    if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">依 ${esc(eod.made_on)} 收盤，在美股開盤前算的${preOk ? "，留作對照" : ""}</p></div>`);
-    const us = TX.usMarket();
-    cards.push(`<div class="card"><h3>美股交易時間（台北時間）</h3>
-      <p style="margin:0 0 8px"><b>${esc(us.text)}</b></p>
-      <ul class="plain">
-        <li>現在是<b>${us.season}</b>，美股正常交易：<b class="num">${us.open}–隔日 ${us.close}</b></li>
-        <li>夏令（${us.summerFrom}–${us.winterFrom}）：21:30–隔日 04:00</li>
-        <li>冬令（${us.winterFrom} 起到明年 3 月）：22:30–隔日 05:00</li>
-        <li>美股還沒開盤的空窗：台股 13:30 收盤 → 美股 ${us.open} 開盤。這段時間只能用「台股收盤後預估」。</li>
-        <li>美股收盤後，台北 08:05 算出「含隔夜美股」機率，09:00 台股開盤。</li>
-      </ul><p class="foot">美股假日（例如感恩節）沒有交易，那晚不會有新的美股資料。</p></div>`);
+    if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">${esc(TX.usMarket().line)}</p></div>`);
     const main = intradayOn ? live.p_up : preOk ? pre.p : eod ? eod.p : null;
     if (main != null) $("#headline").textContent = intradayOn ? `今天收紅機率 ${pct(main)}` : `下一交易日上漲機率 ${pct(main)}`;
     $("#stamp").textContent = intradayOn ? `盤中 ${live.time} 更新` : preOk ? `盤前 ${pre.updated.slice(11, 16)} 更新` : eod ? `收盤後 ${eod.updated.slice(5, 16).replace("T", " ")} 更新` : "";
@@ -78,7 +68,7 @@
     let tables = "";
     if (pre && pre.buckets_sox) tables += bk(pre.buckets_sox, "歷史相似情境：隔夜費半漲跌 → 台股隔天收紅比例", which(pre.overnight.sox, pre.buckets_sox));
     if (eod && eod.buckets_r1) tables += bk(eod.buckets_r1, "歷史相似情境：台股當日漲跌 → 隔天收紅比例", which(eod.today_r1, eod.buckets_r1));
-    $("#why").innerHTML = `<div class="sec-head"><h2>這個機率怎麼來的</h2><p>兩個機率預測的是同一件事：下一個交易日加權收盤會不會高於前一天。差別是「台股收盤後預估」只看台股，算的時候美股還沒開盤；「含隔夜美股」等美股收盤後再算，所以準很多。<br>邏輯迴歸模型，用 2005 年至今的加權指數${m === pre ? "與費半、台積電 ADR、那斯達克" : ""}訓練。紅色把機率往上推、綠色往下拉，長度代表影響大小；右邊是目前數值。</p></div>
+    $("#why").innerHTML = `<div class="sec-head"><h2>這個機率怎麼來的</h2><p>邏輯迴歸模型，用 2005 年至今的加權指數${m === pre ? "與費半、台積電 ADR、那斯達克" : ""}訓練。紅色把機率往上推、綠色往下拉，長度代表影響大小；右邊是目前數值。</p></div>
       <div class="stack"><div class="card"><div class="drivers">${drv}</div></div><div class="two">${tables}</div></div>`;
   }
 

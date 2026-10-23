@@ -33,7 +33,9 @@ window.TX = (function () {
     // DST switch dates for this year: 2nd Sunday of March, 1st Sunday of November
     const y = now.getFullYear();
     const nthSun = (m, n) => { const d = new Date(Date.UTC(y, m, 1)); const first = (7 - d.getUTCDay()) % 7 + 1; return `${m + 1}/${first + 7 * (n - 1)}`; };
-    return { dst, open, close, state, text, season: dst ? "夏令時間" : "冬令時間", summerFrom: nthSun(2, 2), winterFrom: nthSun(10, 1) };
+    const short = state === "open" ? "交易中" : state === "pre" ? `今晚 ${open} 開盤` : text.includes("週一") ? `週一 ${open} 開盤` : `今晚 ${open} 開盤`;
+    const line = `美股 ${open}–${close}（${dst ? "夏令" : "冬令"}）｜${short}`;
+    return { dst, open, close, state, text, short, line, season: dst ? "夏令時間" : "冬令時間", summerFrom: nthSun(2, 2), winterFrom: nthSun(10, 1) };
   }
   const mode = () => document.documentElement.dataset.mode || "desktop";
   // Give every cell of a .rt table its column name, so phones can show rows as labelled cards.
