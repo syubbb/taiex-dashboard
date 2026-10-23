@@ -300,3 +300,8 @@ ul.cmpt .tg{margin-right:8px;vertical-align:1px;font-size:12px;padding:0 6px;lin
 .sd .stocks{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
 .sd .stk{padding:7px 10px}
 html[data-mode="mobile"] .sd .stocks{grid-template-columns:minmax(0,1fr)}
+/* alignment: fixed-width label columns so every text line starts at the same x */
+ul.cmpt li{display:grid;grid-template-columns:4.6em minmax(0,1fr);column-gap:10px;align-items:start}
+ul.cmpt .tg{margin:0;width:100%;text-align:center;box-sizing:border-box;padding:0 2px;margin-top:2px}
+ul.cmpt li.empty{display:block}
+.sr-h .st{width:5.4em;text-align:center;padding:0;box-sizing:border-box}
