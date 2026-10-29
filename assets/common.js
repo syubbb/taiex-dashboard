@@ -43,7 +43,15 @@ window.TX = (function () {
     const nowTW = new Date(Date.now() + 8 * 3600e3);
     const hm = nowTW.getUTCHours() * 60 + nowTW.getUTCMinutes();
     const isToday = day && day.date === today && day.points && day.points.length;
-    const head = `<div class="sec-head"><h2>今天盤中收紅機率</h2><p>台股 09:00–13:30 每 5 分鐘更新：以現在的漲跌，收盤仍高於昨天收盤的機率</p></div>`;
+    const nextTxt = (() => {
+      if (!live || live.date !== today) return "";
+      const [h, m] = live.time.split(":").map(Number);
+      const n = h * 60 + m + 5;
+      if (n > 13 * 60 + 30) return "　今天已收盤，不再更新";
+      const hhmm = String(Math.floor(n / 60)).padStart(2, "0") + ":" + String(n % 60).padStart(2, "0");
+      return n > hm ? `　預計下次更新 ${hhmm}` : `　預計下次更新 ${hhmm}（排程稍有延遲）`;
+    })();
+    const head = `<div class="sec-head"><h2>今天盤中收紅機率</h2><p>台股 09:00–13:30 每 5 分鐘更新：以現在的漲跌，收盤仍高於昨天收盤的機率${nextTxt}</p></div>`;
     if (!isToday) {
       const wd = nowTW.getUTCDay();
       const msg = wd === 0 || wd === 6 ? "今天週末休市，下個交易日 09:00 開盤後開始更新。"

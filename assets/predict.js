@@ -23,7 +23,7 @@
     if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">${esc(TX.usMarket().line)}</p></div>`);
     const main = intradayOn ? live.p_up : preOk ? pre.p : eod ? eod.p : null;
     if (main != null) $("#headline").textContent = intradayOn ? `今天收紅機率 ${pct(main)}` : `下一交易日上漲機率 ${pct(main)}`;
-    $("#stamp").textContent = intradayOn ? `盤中 ${live.time} 更新` : preOk ? `盤前 ${pre.updated.slice(11, 16)} 更新` : eod ? `收盤後 ${eod.updated.slice(5, 16).replace("T", " ")} 更新` : "";
+    $("#stamp").textContent = intradayOn ? `盤中 ${live.time} 更新`+((m)=>m>13*60+30?"（已收盤）":`，預計 ${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")} 下次更新`)(+live.time.slice(0,2)*60+ +live.time.slice(3,5)+5) : preOk ? `盤前 ${pre.updated.slice(11, 16)} 更新` : eod ? `收盤後 ${eod.updated.slice(5, 16).replace("T", " ")} 更新` : "";
     $("#now").innerHTML = cards.length ? `<div class="two">${cards.join("")}</div>` : '<p class="empty">第一次資料更新完成後會出現在這裡。</p>';
   }
 
