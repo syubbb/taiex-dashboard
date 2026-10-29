@@ -1,17 +1,20 @@
 name: 盤中：每 5 分鐘收紅機率
 on:
   schedule:
-    - cron: "*/5 1-5 * * 1-5"   # 09:00–13:55 台北
+    # GitHub 的 */5 排程常被略過，改成在開盤前後多次啟動，由同一個 job 在內部每 5 分鐘跑一次（重複啟動會排隊，不會同時跑）
+    - cron: "41 0 * * 1-5"   # 08:41 台北
+    - cron: "13 1 * * 1-5"   # 09:13 台北（補跑）
+    - cron: "37 2 * * 1-5"   # 10:37 台北（補跑）
   workflow_dispatch:
 permissions:
   contents: write
 concurrency:
-  group: data-writer
+  group: intraday-loop
   cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -23,8 +26,19 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python scripts/intraday.py
+      - name: 每 5 分鐘更新到 13:32（台北）
         env:
           DATA_DIR: data-branch/data
           PYTHONPATH: scripts
-      - run: scripts/commit.sh "盤中 $(TZ=Asia/Taipei date '+%F %H:%M')"
+        run: |
+          while true; do
+            hm=$(TZ=Asia/Taipei date +%H%M)
+            [ "$hm" -gt 1332 ] && { echo "已過收盤，結束"; break; }
+            if [ "$hm" -ge 900 ]; then
+              python scripts/intraday.py || true
+              scripts/commit.sh "盤中 $(TZ=Asia/Taipei date '+%F %H:%M')" || true
+              grep -q "休市" data-branch/data/status/intraday.json && { echo "今天休市，結束"; break; }
+            fi
+            now=$(date +%s)
+            sleep $(( 300 - now % 300 + 20 ))
+          done
