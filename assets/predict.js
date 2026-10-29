@@ -19,6 +19,7 @@
     const cards = [];
     if (false) cards.push(`<div class="card"><h3>今天盤中收紅機率 · ${esc(live.time)}</h3><div class="big ${tone(live.p_up)}">${pct(live.p_up)}</div>${bar(live.p_up)}<p class="foot">加權 ${fmt(live.price, 2)}（<span class="${sign(live.ret_pct)}">${signed(live.ret_pct, 2)}%</span>）　資料：${esc(live.src)}</p></div>`);
     if (preOk) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big ${tone(pre.p)}">${pct(pre.p)}</div>${bar(pre.p)}<p class="foot">${esc(pre.updated.replace("T", " "))} 更新　依 ${esc(pre.made_on)} 台股收盤，已納入美股至 ${esc(pre.us_last_session.sox)}（美東日期）</p></div>`);
+    else if (eod) cards.push(`<div class="card"><h3>${intradayOn ? "今天開盤前預估" : "下一交易日上漲機率"} · 含隔夜美股</h3><div class="big">更新中</div><p class="foot">美股收盤後自動重算，通常 06:00 前完成${pre ? `；上一筆 ${esc(pre.updated.replace("T", " "))}` : ""}</p></div>`);
     if (eod) cards.push(`<div class="card"><h3>台股收盤後預估 · 尚未納入美股</h3><div class="big ${tone(eod.p)}">${pct(eod.p)}</div>${bar(eod.p)}<p class="foot">${esc(TX.usMarket().line)}</p></div>`);
     const main = intradayOn ? live.p_up : preOk ? pre.p : eod ? eod.p : null;
     if (main != null) $("#headline").textContent = intradayOn ? `今天收紅機率 ${pct(main)}` : `下一交易日上漲機率 ${pct(main)}`;

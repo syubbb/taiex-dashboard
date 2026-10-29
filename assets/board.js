@@ -12,6 +12,7 @@
     const cells = [];
     const pNext = pre && eod && pre.made_on === eod.made_on ? pre : null;
     if (pNext) cells.push(`<div><div class="l">${live && live.date === todayTW() ? "今天開盤前預估（含隔夜美股）" : "下一交易日上漲機率（含隔夜美股）"}</div><div class="v ${pNext.p >= .5 ? "up" : "down"}">${pct(pNext.p)}</div><div class="s">已納入美股至 ${esc(pre.us_last_session.sox.slice(5))}（美東）　隔夜費半 <span class="${sign(pre.overnight.sox)}">${signed(pre.overnight.sox * 100, 2)}%</span></div></div>`);
+    else if (eod) cells.push(`<div><div class="l">含隔夜美股的上漲機率</div><div class="v">更新中</div><div class="s">美股收盤後自動重算，通常 06:00 前完成${pre ? `；上一筆 ${esc(pre.updated.slice(5, 16).replace("T", " "))}` : ""}</div></div>`);
     if (eod) cells.push(`<div><div class="l">台股收盤後預估（尚未納入美股）</div><div class="v ${eod.p >= .5 ? "up" : "down"}">${pct(eod.p)}</div><div class="s">${esc(TX.usMarket().line)}</div></div>`);
     if (!cells.length) { box.innerHTML = `<div><div class="l">漲跌機率</div><div class="s">第一次資料更新完成後會出現在這裡。</div></div>`; return; }
     cells.push(`<div><div class="l">準不準？</div><div class="s" style="margin:6px 0 8px">每一筆預測都留紀錄、隔天對答案。</div><a href="predict.html">看漲跌機率與成績單 →</a></div>`);
